@@ -1,0 +1,16 @@
+.robot-card {
+  border-radius: 12px;
+  transition: 0.3s;
+}
+
+.robot-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.robot-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+}
