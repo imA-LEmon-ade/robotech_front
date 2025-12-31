@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../../services/axiosConfig";
 
 export default function AdminTorneos() {
 
   const [torneos, setTorneos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -15,8 +18,7 @@ export default function AdminTorneos() {
     fechaFin: "",
     fechaAperturaInscripcion: "",
     fechaCierreInscripcion: "",
-    estado: "ABIERTO",
-    tipo: "INDIVIDUAL"     // <-- AGREGADO
+    estado: "BORRADOR",
   });
 
   // =============================
@@ -24,11 +26,18 @@ export default function AdminTorneos() {
   // =============================
   const cargar = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/admin/torneos");
-      setTorneos(res.data);
+      setLoading(true);
+      setError(null);
+
+      const res = await api.get("/api/admin/torneos");
+      setTorneos(Array.isArray(res.data) ? res.data : []);
+
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo cargar torneos", "error");
+      setError("No se pudieron cargar los torneos");
+      setTorneos([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,51 +45,22 @@ export default function AdminTorneos() {
     cargar();
   }, []);
 
-  
   // =============================
-  //   CAMBIAR ESTADO (ADMIN)
+  //   CAMBIAR ESTADO
   // =============================
   const cambiarEstado = async (idTorneo, nuevoEstado) => {
     try {
-      await axios.put(
-        `http://localhost:8080/api/admin/torneos/${idTorneo}/estado`,
-        { estado: nuevoEstado }
-      );
-
-      await Swal.fire({
-        icon: "success",
-        title: "Estado actualizado",
-        confirmButtonColor: "#3085d6"
+      await api.put(`/api/admin/torneos/${idTorneo}/estado`, {
+        estado: nuevoEstado
       });
 
+      Swal.fire("✔ Estado actualizado", "", "success");
       cargar();
 
     } catch (err) {
       console.error(err);
-      Swal.fire(
-        "Error",
-        err?.response?.data ?? "No se pudo cambiar el estado",
-        "error"
-      );
+      Swal.fire("Error", "No se pudo cambiar el estado", "error");
     }
-  };
-
-  // =============================
-  //   ABRIR MODAL CREAR
-  // =============================
-  const abrirCrear = () => {
-    setForm({
-      nombre: "",
-      descripcion: "",
-      fechaInicio: "",
-      fechaFin: "",
-      fechaAperturaInscripcion: "",
-      fechaCierreInscripcion: "",
-      estado: "ABIERTO",
-      tipo: "INDIVIDUAL"   // <-- AGREGADO
-    });
-    setEditingId(null);
-    setModal(true);
   };
 
   // =============================
@@ -89,13 +69,10 @@ export default function AdminTorneos() {
   const guardar = async () => {
     try {
       if (!editingId) {
-        await axios.post("http://localhost:8080/api/admin/torneos", form);
+        await api.post("/api/admin/torneos", form);
         Swal.fire("✔ Torneo creado", "", "success");
       } else {
-        await axios.put(
-          `http://localhost:8080/api/admin/torneos/${editingId}`,
-          form
-        );
+        await api.put(`/api/admin/torneos/${editingId}`, form);
         Swal.fire("✔ Torneo actualizado", "", "success");
       }
 
@@ -113,7 +90,7 @@ export default function AdminTorneos() {
   // =============================
   const eliminar = async (id) => {
     const confirm = await Swal.fire({
-      title: "¿Eliminar Torneo?",
+      title: "¿Eliminar torneo?",
       text: "Esta acción no se puede deshacer",
       icon: "warning",
       showCancelButton: true
@@ -122,8 +99,8 @@ export default function AdminTorneos() {
     if (!confirm.isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/admin/torneos/${id}`);
-      Swal.fire("Eliminado", "", "success");
+      await api.delete(`/api/admin/torneos/${id}`);
+      Swal.fire("✔ Eliminado", "", "success");
       cargar();
     } catch (err) {
       console.error(err);
@@ -131,18 +108,48 @@ export default function AdminTorneos() {
     }
   };
 
+  const f = (fecha) =>
+    fecha ? new Date(fecha).toLocaleString() : "—";
+
   const gestionarCategorias = (id) => {
-    window.location.href = `/admin/torneos/${id}/categorias`;
-  };
+  window.location.href = `/admin/torneos/${id}/categorias`;
+};
 
-  const f = (fecha) => fecha ? new Date(fecha).toLocaleString() : "—";
+  // =============================
+  //   RENDER DEFENSIVO
+  // =============================
+  if (loading) {
+    return <h3 className="text-center mt-4">Cargando torneos...</h3>;
+  }
 
+  if (error) {
+    return <h3 className="text-center text-danger">{error}</h3>;
+  }
+
+  // =============================
+  //   UI
+  // =============================
   return (
     <div className="container mt-4">
 
       <h2 className="fw-bold">Gestión de Torneos</h2>
 
-      <button className="btn btn-primary my-3" onClick={abrirCrear}>
+      <button
+        className="btn btn-primary my-3"
+        onClick={() => {
+          setForm({
+            nombre: "",
+            descripcion: "",
+            fechaInicio: "",
+            fechaFin: "",
+            fechaAperturaInscripcion: "",
+            fechaCierreInscripcion: "",
+            estado: "BORRADOR",
+          });
+          setEditingId(null);
+          setModal(true);
+        }}
+      >
         ➕ Crear torneo
       </button>
 
@@ -154,7 +161,6 @@ export default function AdminTorneos() {
             <th>Fin</th>
             <th>Inscripción</th>
             <th>Estado</th>
-            <th>Tipo</th>
             <th>Categorías</th>
             <th>Acciones</th>
           </tr>
@@ -162,34 +168,37 @@ export default function AdminTorneos() {
 
         <tbody>
           {torneos.length === 0 ? (
-            <tr><td colSpan="8" className="text-center">No hay torneos registrados</td></tr>
+            <tr>
+              <td colSpan="6" className="text-center">
+                No hay torneos registrados
+              </td>
+            </tr>
           ) : (
             torneos.map(t => (
               <tr key={t.idTorneo}>
                 <td>{t.nombre}</td>
                 <td>{f(t.fechaInicio)}</td>
                 <td>{f(t.fechaFin)}</td>
-                <td>{f(t.fechaAperturaInscripcion)} <br />→ {f(t.fechaCierreInscripcion)}</td>
-                
-              <td>
-                <select
-                  className="form-control"
-                  value={t.estado}
-                  disabled={t.estado === "FINALIZADO"}
-                  onChange={e =>
-                    cambiarEstado(t.idTorneo, e.target.value)
-                  }
-                >
-                  <option value="BORRADOR">BORRADOR</option>
-                  <option value="INSCRIPCIONES_ABIERTAS">INSCRIPCIONES_ABIERTAS</option>
-                  <option value="EN_PROGRESO">EN_PROGRESO</option>
-                  <option value="FINALIZADO">FINALIZADO</option>
-                </select>
-              </td>
+                <td>
+                  {f(t.fechaAperturaInscripcion)} <br />
+                  → {f(t.fechaCierreInscripcion)}
+                </td>
 
-                <td>{t.tipo}</td>
-
-
+                <td>
+                  <select
+                    className="form-control"
+                    value={t.estado}
+                    disabled={t.estado === "FINALIZADO"}
+                    onChange={e =>
+                      cambiarEstado(t.idTorneo, e.target.value)
+                    }
+                  >
+                    <option value="BORRADOR">BORRADOR</option>
+                    <option value="INSCRIPCIONES_ABIERTAS">INSCRIPCIONES_ABIERTAS</option>
+                    <option value="EN_PROGRESO">EN_PROGRESO</option>
+                    <option value="FINALIZADO">FINALIZADO</option>
+                  </select>
+                </td>
 
                 <td>
                   <button
@@ -205,16 +214,7 @@ export default function AdminTorneos() {
                     className="btn btn-warning btn-sm me-2"
                     onClick={() => {
                       setEditingId(t.idTorneo);
-                      setForm({
-                        nombre: t.nombre,
-                        descripcion: t.descripcion,
-                        fechaInicio: t.fechaInicio,
-                        fechaFin: t.fechaFin,
-                        fechaAperturaInscripcion: t.fechaAperturaInscripcion,
-                        fechaCierreInscripcion: t.fechaCierreInscripcion,
-                        estado: t.estado,
-                        tipo: t.tipo          // <-- AGREGADO
-                      });
+                      setForm(t);
                       setModal(true);
                     }}
                   >
@@ -235,63 +235,63 @@ export default function AdminTorneos() {
         </tbody>
       </table>
 
-      {/* ======================= MODAL ======================= */}
+      {/* ================= MODAL ================= */}
       {modal && (
-        <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,0.4)" }}>
+        <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,.4)" }}>
           <div className="modal-dialog">
             <div className="modal-content p-3">
 
               <h4>{editingId ? "Editar Torneo" : "Crear Torneo"}</h4>
 
-              <input className="form-control mt-2" placeholder="Nombre"
-                value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+              {[
+                ["Nombre", "nombre"],
+                ["Descripción", "descripcion"]
+              ].map(([label, key]) => (
+                <input
+                  key={key}
+                  className="form-control mt-2"
+                  placeholder={label}
+                  value={form[key]}
+                  onChange={e => setForm({ ...form, [key]: e.target.value })}
+                />
+              ))}
 
-              <textarea className="form-control mt-2" placeholder="Descripción"
-                value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} />
-
-              <label className="mt-3 fw-bold">Fecha inicio</label>
-              <input type="datetime-local" className="form-control"
-                value={form.fechaInicio}
-                onChange={e => setForm({ ...form, fechaInicio: e.target.value })} />
-
-              <label className="mt-3 fw-bold">Fecha fin</label>
-              <input type="datetime-local" className="form-control"
-                value={form.fechaFin}
-                onChange={e => setForm({ ...form, fechaFin: e.target.value })} />
-
-              <label className="mt-3 fw-bold">Apertura inscripción</label>
-              <input type="datetime-local" className="form-control"
-                value={form.fechaAperturaInscripcion}
-                onChange={e => setForm({ ...form, fechaAperturaInscripcion: e.target.value })} />
-
-              <label className="mt-3 fw-bold">Cierre inscripción</label>
-              <input type="datetime-local" className="form-control"
-                value={form.fechaCierreInscripcion}
-                onChange={e => setForm({ ...form, fechaCierreInscripcion: e.target.value })} />
-
-              {/* ------------------ NUEVO: TIPO ------------------ */}
-              <label className="mt-3 fw-bold">Tipo</label>
-              <select className="form-control"
-                value={form.tipo}
-                onChange={e => setForm({ ...form, tipo: e.target.value })}>
-                <option value="INDIVIDUAL">INDIVIDUAL</option>
-                <option value="EQUIPOS">EQUIPOS</option>
-              </select>
-              {/* -------------------------------------------------- */}
+              {[
+                ["Inicio", "fechaInicio"],
+                ["Fin", "fechaFin"],
+                ["Apertura inscripción", "fechaAperturaInscripcion"],
+                ["Cierre inscripción", "fechaCierreInscripcion"],
+              ].map(([label, key]) => (
+                <div key={key}>
+                  <label className="mt-3 fw-bold">{label}</label>
+                  <input
+                    type="datetime-local"
+                    className="form-control"
+                    value={form[key]}
+                    onChange={e => setForm({ ...form, [key]: e.target.value })}
+                  />
+                </div>
+              ))}
 
               <label className="mt-3 fw-bold">Estado</label>
-              <select className="form-control"
+              <select
+                className="form-control"
                 value={form.estado}
-                onChange={e => setForm({ ...form, estado: e.target.value })}>
-                <option value="ABIERTO">ABIERTO</option>
-                <option value="CERRADO">CERRADO</option>
-                <option value="EN_CURSO">EN CURSO</option>
+                onChange={e => setForm({ ...form, estado: e.target.value })}
+              >
+                <option value="BORRADOR">BORRADOR</option>
+                <option value="INSCRIPCIONES_ABIERTAS">INSCRIPCIONES_ABIERTAS</option>
+                <option value="EN_PROGRESO">EN_PROGRESO</option>
                 <option value="FINALIZADO">FINALIZADO</option>
               </select>
 
               <div className="mt-3 d-flex justify-content-end gap-2">
-                <button className="btn btn-secondary" onClick={() => setModal(false)}>Cancelar</button>
-                <button className="btn btn-success" onClick={guardar}>Guardar</button>
+                <button className="btn btn-secondary" onClick={() => setModal(false)}>
+                  Cancelar
+                </button>
+                <button className="btn btn-success" onClick={guardar}>
+                  Guardar
+                </button>
               </div>
 
             </div>

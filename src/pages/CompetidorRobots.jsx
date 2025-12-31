@@ -21,20 +21,21 @@ export default function CompetidorRobots() {
   const idCompetidor = entidad?.idCompetidor;
 
   useEffect(() => {
-    cargarRobots();
-  }, []);
-
   const cargarRobots = async () => {
     try {
       const res = await axios.get(
         `http://localhost:8080/api/competidor/robots/${idCompetidor}`
       );
       setRobots(res.data);
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "No se pudieron cargar tus robots", "error");
+    } catch (error) {
+      console.error(error);
     }
   };
+
+  if (idCompetidor) cargarRobots();
+}, [idCompetidor]);
+
+  
 
   const abrirCrear = () => {
     setForm({ nombre: "", nickname: "", categoria: "" });

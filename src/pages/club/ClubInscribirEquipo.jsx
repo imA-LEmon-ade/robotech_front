@@ -1,90 +1,88 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-import Swal from "sweetalert2";
+import api from "../../services/axiosConfig";
 
 export default function ClubInscribirEquipo() {
+  const { idTorneo } = useParams();
 
-  const { idCategoria } = useParams();
-  const [robots, setRobots] = useState([]);
-  const [seleccionados, setSeleccionados] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const club = JSON.parse(localStorage.getItem("usuario"));
-  const clubId = club?.idClub;
-
-  useEffect(() => {
-    axios.get(`http://localhost:8080/api/club/robots`, {
-      headers: { "club-id": clubId }
-    })
-    .then(res => setRobots(res.data))
-    .catch(() => alert("Error cargando robots"));
-  }, []);
-
-  const toggleRobot = (id) => {
-    setSeleccionados(prev =>
-      prev.includes(id)
-        ? prev.filter(r => r !== id)
-        : [...prev, id]
-    );
-  };
-
-  const inscribir = async () => {
+  const cargarCategorias = async () => {
     try {
-      await axios.post(
-        "http://localhost:8080/api/club/inscripciones/equipos",
-        {
-          idCategoriaTorneo: idCategoria,
-          robots: seleccionados
-        },
-        { headers: { "club-id": clubId } }
-      );
-
-      Swal.fire("Equipo inscrito", "", "success");
+      const res = await api.get(`/api/club/torneos/${idTorneo}/categorias`);
+      setCategorias(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      Swal.fire(
-        "Error",
-        err.response?.data?.message || "No se pudo inscribir",
-        "error"
-      );
+      console.error(err);
+      setCategorias([]);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    cargarCategorias();
+  }, [idTorneo]);
+
+  if (loading) return <p>Cargando categorías...</p>;
+
   return (
     <div className="container mt-4">
-      <h3>Inscribir Equipo</h3>
+      <h2 className="fw-bold mb-4">🏆 Categorías del Torneo</h2>
 
-      <table className="table table-dark table-bordered mt-3">
-        <thead>
-          <tr>
-            <th>Seleccionar</th>
-            <th>Robot</th>
-            <th>Categoría</th>
-          </tr>
-        </thead>
-        <tbody>
-          {robots.map(r => (
-            <tr key={r.idRobot}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={seleccionados.includes(r.idRobot)}
-                  onChange={() => toggleRobot(r.idRobot)}
-                />
-              </td>
-              <td>{r.nombre}</td>
-              <td>{r.categoria}</td>
-            </tr>
+      {categorias.length === 0 ? (
+        <div className="alert alert-info">
+          No hay categorías registradas para este torneo
+        </div>
+      ) : (
+        <div className="row g-4">
+          {categorias.map((cat) => (
+            <div
+              key={cat.idCategoriaTorneo}
+              className="col-md-6 col-lg-4"
+            >
+              <div className="card h-100 shadow-sm border-0">
+                <div className="card-body">
+                  <h5 className="card-title fw-bold">{cat.categoria}</h5>
+
+                  <span
+                    className={`badge mb-2 ${
+                      cat.modalidad === "EQUIPO"
+                        ? "bg-primary"
+                        : "bg-success"
+                    }`}
+                  >
+                    {cat.modalidad}
+                  </span>
+
+                  <p className="card-text mt-2 text-muted">
+                    {cat.descripcion || "Sin descripción"}
+                  </p>
+
+                  <ul className="list-group list-group-flush mb-3">
+                    {cat.maxParticipantes && (
+                      <li className="list-group-item px-0">
+                        👥 Máx. participantes:{" "}
+                        <strong>{cat.maxParticipantes}</strong>
+                      </li>
+                    )}
+                    {cat.maxEquipos && (
+                      <li className="list-group-item px-0">
+                        🤖 Máx. equipos:{" "}
+                        <strong>{cat.maxEquipos}</strong>
+                      </li>
+                    )}
+                  </ul>
+
+                  <button className="btn btn-outline-primary w-100">
+                    Inscribirse
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-      <button
-        className="btn btn-success mt-3"
-        disabled={seleccionados.length === 0}
-        onClick={inscribir}
-      >
-        Inscribir equipo
-      </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,19 +9,21 @@ export default function AdminCategoriasTorneo() {
 
   const [torneo, setTorneo] = useState(null);
   const [categorias, setCategorias] = useState([]);
-
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
   const [form, setForm] = useState({
     categoria: "",
     descripcion: "",
-    maxParticipantes: 8
+    modalidad: "INDIVIDUAL",
+    maxParticipantes: 1,
+    maxEquipos: null,
+    maxIntegrantesEquipo: null
   });
 
-  // ==========================================================
+  // ==================================================
   // CARGAR TORNEO + CATEGORÍAS
-  // ==========================================================
+  // ==================================================
   const cargar = async () => {
     try {
       const torneoRes = await axios.get(
@@ -33,11 +35,12 @@ export default function AdminCategoriasTorneo() {
       );
 
       setTorneo(torneoRes.data);
-      setCategorias(categoriasRes.data);
+      setCategorias(Array.isArray(categoriasRes.data) ? categoriasRes.data : []);
 
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "No se pudo cargar la información", "error");
+      setCategorias([]);
     }
   };
 
@@ -45,34 +48,54 @@ export default function AdminCategoriasTorneo() {
     cargar();
   }, []);
 
-  // ==========================================================
-  // CREAR / EDITAR
-  // ==========================================================
+  // ==================================================
+  // MODAL
+  // ==================================================
   const abrirCrear = () => {
     setForm({
       categoria: "",
       descripcion: "",
-      maxParticipantes: 8
+      modalidad: "INDIVIDUAL",
+      maxParticipantes: 1,
+      maxEquipos: null,
+      maxIntegrantesEquipo: null
     });
     setEditingId(null);
     setModal(true);
   };
 
+  // ==================================================
+  // GUARDAR
+  // ==================================================
   const guardar = async () => {
     try {
+
+      const payload =
+        form.modalidad === "INDIVIDUAL"
+          ? {
+              categoria: form.categoria,
+              descripcion: form.descripcion,
+              modalidad: "INDIVIDUAL",
+              maxParticipantes: form.maxParticipantes
+            }
+          : {
+              categoria: form.categoria,
+              descripcion: form.descripcion,
+              modalidad: "EQUIPO",
+              maxEquipos: form.maxEquipos,
+              maxIntegrantesEquipo: form.maxIntegrantesEquipo
+            };
+
       if (!editingId) {
-        // CREAR NUEVA
         await axios.post(
           `http://localhost:8080/api/admin/categorias-torneo/${idTorneo}`,
-          form
+          payload
         );
         Swal.fire("✔ Categoría creada", "", "success");
-
       } else {
-        // EDITAR EXISTENTE
         await axios.put(
           `http://localhost:8080/api/admin/categorias-torneo/${editingId}`,
-          form
+          payload
         );
         Swal.fire("✔ Categoría actualizada", "", "success");
       }
@@ -81,18 +104,17 @@ export default function AdminCategoriasTorneo() {
       cargar();
 
     } catch (err) {
-      console.error("ERROR:", err);
+      console.error(err);
       Swal.fire("Error", "No se pudo guardar la categoría", "error");
     }
   };
 
-  // ==========================================================
+  // ==================================================
   // ELIMINAR
-  // ==========================================================
+  // ==================================================
   const eliminar = async (id) => {
     const confirm = await Swal.fire({
       title: "¿Eliminar categoría?",
-      text: "Esta acción no se puede deshacer",
       icon: "warning",
       showCancelButton: true
     });
@@ -100,23 +122,20 @@ export default function AdminCategoriasTorneo() {
     if (!confirm.isConfirmed) return;
 
     try {
-
       await axios.delete(
         `http://localhost:8080/api/admin/categorias-torneo/${id}`
       );
-
       Swal.fire("Eliminado", "", "success");
       cargar();
-
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo eliminar la categoría", "error");
+      Swal.fire("Error", "No se pudo eliminar", "error");
     }
   };
 
-  // ==========================================================
+  // ==================================================
   // RENDER
-  // ==========================================================
+  // ==================================================
   return (
     <div className="container mt-4">
 
@@ -136,7 +155,9 @@ export default function AdminCategoriasTorneo() {
         <thead>
           <tr>
             <th>Categoría</th>
-            <th>Máx Participantes</th>
+            <th>Modalidad</th>
+            <th>Cupos / Equipos</th>
+            <th>Integrantes</th>
             <th>Descripción</th>
             <th>Acciones</th>
           </tr>
@@ -144,12 +165,27 @@ export default function AdminCategoriasTorneo() {
 
         <tbody>
           {categorias.length === 0 ? (
-            <tr><td colSpan="4" className="text-center">No hay categorías</td></tr>
+            <tr>
+              <td colSpan="6" className="text-center">No hay categorías</td>
+            </tr>
           ) : (
             categorias.map(c => (
               <tr key={c.idCategoriaTorneo}>
                 <td>{c.categoria}</td>
-                <td>{c.maxParticipantes}</td>
+                <td>{c.modalidad}</td>
+
+                <td>
+                  {c.modalidad === "INDIVIDUAL"
+                    ? c.maxParticipantes
+                    : c.maxEquipos}
+                </td>
+
+                <td>
+                  {c.modalidad === "EQUIPO"
+                    ? c.maxIntegrantesEquipo
+                    : "—"}
+                </td>
+
                 <td>{c.descripcion}</td>
 
                 <td>
@@ -160,7 +196,10 @@ export default function AdminCategoriasTorneo() {
                       setForm({
                         categoria: c.categoria,
                         descripcion: c.descripcion,
-                        maxParticipantes: c.maxParticipantes
+                        modalidad: c.modalidad,
+                        maxParticipantes: c.maxParticipantes,
+                        maxEquipos: c.maxEquipos,
+                        maxIntegrantesEquipo: c.maxIntegrantesEquipo
                       });
                       setModal(true);
                     }}
@@ -181,30 +220,97 @@ export default function AdminCategoriasTorneo() {
         </tbody>
       </table>
 
-      {/* MODAL */}
+      {/* ================= MODAL ================= */}
       {modal && (
         <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,0.45)" }}>
           <div className="modal-dialog">
             <div className="modal-content p-3">
+
               <h4>{editingId ? "Editar Categoría" : "Crear Categoría"}</h4>
 
-              <input className="form-control mt-2" placeholder="Nombre categoría"
+              <input
+                className="form-control mt-2"
+                placeholder="Nombre categoría"
                 value={form.categoria}
-                onChange={e => setForm({ ...form, categoria: e.target.value })} />
+                onChange={e => setForm({ ...form, categoria: e.target.value })}
+              />
 
-              <textarea className="form-control mt-2" placeholder="Descripción"
+              <textarea
+                className="form-control mt-2"
+                placeholder="Descripción"
                 value={form.descripcion}
-                onChange={e => setForm({ ...form, descripcion: e.target.value })} />
+                onChange={e => setForm({ ...form, descripcion: e.target.value })}
+              />
 
-              <input className="form-control mt-2" type="number" min="1"
-                placeholder="Máximo participantes"
-                value={form.maxParticipantes}
-                onChange={e => setForm({ ...form, maxParticipantes: e.target.value })} />
+              <label className="mt-3 fw-bold">Modalidad</label>
+              <select
+                className="form-control"
+                value={form.modalidad}
+                onChange={e => {
+                  const modalidad = e.target.value;
+                  setForm({
+                    ...form,
+                    modalidad,
+                    maxParticipantes: modalidad === "INDIVIDUAL" ? 1 : null,
+                    maxEquipos: modalidad === "EQUIPO" ? 2 : null,
+                    maxIntegrantesEquipo: modalidad === "EQUIPO" ? 2 : null
+                  });
+                }}
+              >
+                <option value="INDIVIDUAL">Individual</option>
+                <option value="EQUIPO">Equipo</option>
+              </select>
+
+              {form.modalidad === "INDIVIDUAL" && (
+                <>
+                  <label className="mt-2 fw-bold">Cupos</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    value={form.maxParticipantes}
+                    onChange={e =>
+                      setForm({ ...form, maxParticipantes: Number(e.target.value) })
+                    }
+                  />
+                </>
+              )}
+
+              {form.modalidad === "EQUIPO" && (
+                <>
+                  <label className="mt-2 fw-bold">Máx equipos</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    value={form.maxEquipos}
+                    onChange={e =>
+                      setForm({ ...form, maxEquipos: Number(e.target.value) })
+                    }
+                  />
+
+                  <label className="mt-2 fw-bold">Integrantes por equipo</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    value={form.maxIntegrantesEquipo}
+                    onChange={e =>
+                      setForm({ ...form, maxIntegrantesEquipo: Number(e.target.value) })
+                    }
+                  />
+                </>
+              )}
 
               <div className="mt-3 d-flex justify-content-end gap-2">
-                <button className="btn btn-secondary" onClick={() => setModal(false)}>Cancelar</button>
-                <button className="btn btn-success" onClick={guardar}>Guardar</button>
+                <button className="btn btn-secondary" onClick={() => setModal(false)}>
+                  Cancelar
+                </button>
+                <button className="btn btn-success" onClick={guardar}>
+                  Guardar
+                </button>
               </div>
+
             </div>
           </div>
         </div>

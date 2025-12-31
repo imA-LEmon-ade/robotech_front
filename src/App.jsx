@@ -1,69 +1,120 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ClubCompetidores from "./pages/ClubCompetidores";
-import Login from "./pages/Login";
+import "./services/axiosConfig";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+// ===== PÚBLICO =====
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import AdminLogin from "./pages/AdminLogin";
 
-import AdminPanel from "./pages/AdminPanel";
-import SubAdminPanel from "./pages/SubAdminPanel";
-import ClubPanel from "./pages/ClubPanel";
-import ClubTorneos from "./pages/club/ClubTorneos.jsx";
-import ClubCategoriasTorneo from "./pages/club/ClubInscribirEquipo.jsx";
-import ClubInscribirEquipo from "./pages/club/ClubInscribirEquipo.jsx";
-import CompetidorPanel from "./pages/CompetidorPanel";
-import CompetidorRobots from "./pages/CompetidorRobots.jsx";
-import JuezPanel from "./pages/JuezPanel";
-import Register from "./pages/Register.jsx";
+import Torneos from "./pages/Torneos";
 import Clubes from "./pages/Clubes";
 import Competidores from "./pages/Competidores";
 import Robots from "./pages/Robots";
 import Rankings from "./pages/Rankings";
-import Torneos from "./pages/Torneos";
+
+// ===== ADMIN =====
+import AdminPanel from "./pages/AdminPanel";
+import AdminUsuarios from "./pages/admin/AdminUsuarios";
 import AdminClubes from "./pages/admin/AdminClubes";
 import AdminJueces from "./pages/admin/AdminJueces";
 import AdminTorneos from "./pages/admin/AdminTorneos";
-import AdminUsuarios from "./pages/admin/AdminUsuarios";
 import AdminCategoriasTorneo from "./pages/admin/AdminCategoriasTorneo";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
+// ===== SUBADMIN =====
+import SubAdminPanel from "./pages/SubAdminPanel";
+import SubAdminDashboard from "./pages/subadmin/SubAdminDashboard";
+
+// ===== CLUB =====
+import ClubPanel from "./pages/ClubPanel";
+import ClubDashboard from "./pages/club/ClubDashboard";
+import ClubCompetidores from "./pages/ClubCompetidores";
+import ClubRobots from "./pages/club/ClubRobots";
+import ClubTorneos from "./pages/club/ClubTorneos";
+import ClubCategoriasTorneo from "./pages/club/ClubInscribirEquipo";
+import ClubInscribirEquipo from "./pages/club/ClubInscribirEquipo";
+
+// ===== COMPETIDORES =====
+import CompetidorPanel from "./pages/CompetidorPanel";
+import CompetidorDashboard from "./pages/Competidores/CompetidorDashboard";
+import CompetidorRobots from "./pages/CompetidorRobots";
+
+// ===== JUECES =====
+import JuezPanel from "./pages/JuezPanel";
+import JuezDashboard from "./pages/jueces/JuezDashboard";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Rutas básicas */}
+        {/* ================= PÚBLICO ================= */}
         <Route path="/" element={<Home />} />
-        // público
-        <Route path="/login" element={<Login />} />               
-        <Route path="/admin/login" element={<AdminLogin />} />   
-         // exclusivo admin
-         <Route path="/admin/jueces" element={<AdminJueces/>}/>
-         <Route path="/admin/usuarios" element={<AdminUsuarios/>}/>
-        <Route path="/admin/clubes" element={<AdminClubes/>} />
-        <Route path="/admin/torneos" element={<AdminTorneos />} />
-        <Route path="/admin/torneos/:idTorneo/categorias" element={<AdminCategoriasTorneo />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Nuevas secciones públicas */}
         <Route path="/torneos" element={<Torneos />} />
         <Route path="/clubes" element={<Clubes />} />
         <Route path="/competidores" element={<Competidores />} />
         <Route path="/robots" element={<Robots />} />
         <Route path="/rankings" element={<Rankings />} />
 
-        {/* Paneles */}
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/subadmin" element={<SubAdminPanel />} />
-        <Route path="/club" element={<ClubPanel />} />
-        <Route path="/competidor" element={<CompetidorPanel />} />
-        <Route path="/competidor/robots" element={<CompetidorRobots />} />
-        <Route path="/juez" element={<JuezPanel />} />
+        {/* ================= ADMIN ================= */}
+        <Route path="/admin" element={<AdminPanel />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="clubes" element={<AdminClubes />} />
+          <Route path="jueces" element={<AdminJueces />} />
+          <Route path="torneos" element={<AdminTorneos />} />
+          <Route
+            path="torneos/:idTorneo/categorias"
+            element={<AdminCategoriasTorneo />}
+          />
+        </Route>
 
-        <Route path="/club/torneos" element={<ClubTorneos />} />
-        <Route path="/club/torneos/:idTorneo/categorias" element={<ClubCategoriasTorneo />} />
-        <Route path="/club/categorias/:idCategoria/inscribir" element={<ClubInscribirEquipo />} />
+        {/* ================= SUBADMIN ================= */}
+        <Route path="/subadmin" element={<SubAdminPanel />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<SubAdminDashboard />} />
+          {/* aquí irán registrar-club, registrar-comp, etc */}
+        </Route>
 
+        {/* ================= CLUB ================= */}
+        <Route path="/club" element={<ClubPanel />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<ClubDashboard />} />
+          <Route path="competidores" element={<ClubCompetidores />} />
+          <Route path="robots" element={<ClubRobots />} />
+          <Route path="torneos" element={<ClubTorneos />} />
+          <Route
+            path="torneos/:idTorneo/categorias"
+            element={<ClubCategoriasTorneo />}
+          />
+          <Route
+            path="categorias/:idCategoria/inscribir"
+            element={<ClubInscribirEquipo />}
+          />
+        </Route>
 
-        {/* 👇 ESTA ES LA RUTA QUE FALTABA CORRECTAMENTE DEFINIDA */}
-        <Route path="/club/competidores" element={<ClubCompetidores />} />
+        {/* ================= COMPETIDORES ================= */}
+        <Route path="/competidor" element={<CompetidorPanel />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<CompetidorDashboard />} />
+          <Route path="robots" element={<CompetidorRobots />} />
+        </Route>
+
+        {/* ================= JUECES ================= */}
+        <Route path="/juez" element={<JuezPanel />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<JuezDashboard />} />
+          {/* torneos, calificar */}
+        </Route>
+
+        {/* ================= FALLBACK ================= */}
+        <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
     </BrowserRouter>

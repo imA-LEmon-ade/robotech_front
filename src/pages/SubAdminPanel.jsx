@@ -1,13 +1,14 @@
+import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 export default function SubAdminPanel() {
 
   const items = [
-    { label: "Registrar Club", to: "/subadmin/registrar-club" },
-    { label: "Registrar Competidor", to: "/subadmin/registrar-comp" },
-    { label: "Registrar Juez", to: "/subadmin/registrar-juez" },
-    { label: "Crear Torneo", to: "/subadmin/torneos" }
+    { label: "Registrar Club", to: "registrar-club" },
+    { label: "Registrar Competidor", to: "registrar-comp" },
+    { label: "Registrar Juez", to: "registrar-juez" },
+    { label: "Crear Torneo", to: "torneos" }
   ];
 
   return (
@@ -18,10 +19,8 @@ export default function SubAdminPanel() {
         <Sidebar titulo="Panel SubAdmin" items={items} />
 
         <div className="flex-grow-1 p-4">
-          <h2 className="fw-bold">Bienvenido, SubAdministrador</h2>
-          <p className="text-muted">
-            Gestiona registros y creación de torneos.
-          </p>
+          {/* 👇 aquí se renderizan las subrutas */}
+          <Outlet />
         </div>
       </div>
     </>
