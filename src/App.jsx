@@ -29,7 +29,7 @@ import SubAdminDashboard from "./pages/subadmin/SubAdminDashboard";
 // ===== CLUB =====
 import ClubPanel from "./pages/ClubPanel";
 import ClubDashboard from "./pages/club/ClubDashboard";
-import ClubCompetidores from "./pages/ClubCompetidores";
+import ClubCompetidores from "./pages/club/ClubCompetidores";
 import ClubRobots from "./pages/club/ClubRobots";
 import ClubTorneos from "./pages/club/ClubTorneos";
 import ClubCategoriasTorneo from "./pages/club/ClubInscribirEquipo";

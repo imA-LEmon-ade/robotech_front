@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { nicknameEsValido } from "../utils/nicknameValidator";
-import axios from "axios";
+import api from "../services/axiosConfig";
 
 export default function CompetidorRobots() {
 
@@ -20,10 +20,9 @@ export default function CompetidorRobots() {
   const entidad = JSON.parse(localStorage.getItem("entidad"));
   const idCompetidor = entidad?.idCompetidor;
 
-  useEffect(() => {
-  const cargarRobots = async () => {
+    const cargarRobots = async () => {
     try {
-      const res = await axios.get(
+      const res = await api.get(
         `http://localhost:8080/api/competidor/robots/${idCompetidor}`
       );
       setRobots(res.data);
@@ -32,9 +31,11 @@ export default function CompetidorRobots() {
     }
   };
 
-  if (idCompetidor) cargarRobots();
+  useEffect(() => {
+  if (idCompetidor) {
+    cargarRobots();
+  }
 }, [idCompetidor]);
-
   
 
   const abrirCrear = () => {
@@ -56,13 +57,13 @@ export default function CompetidorRobots() {
 
     try {
       if (editingId) {
-        await axios.put(
+        await api.put(
           `http://localhost:8080/api/competidor/robots/${editingId}`,
           form
         );
         Swal.fire("Robot actualizado", "", "success");
       } else {
-        await axios.post(
+        await api.post(
           `http://localhost:8080/api/competidor/robots/${idCompetidor}`,
           form
         );
@@ -89,7 +90,7 @@ export default function CompetidorRobots() {
     if (!confirm.isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/competidor/robots/${id}`);
+      await api.delete(`http://localhost:8080/api/competidor/robots/${id}`);
       Swal.fire("Eliminado", "", "success");
       cargarRobots();
     } catch (err) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getMisRobots } from "../../services/robotService";
+import api from "../../services/axiosConfig";
+import "../../styles/ClubRobots.css";
 
 const ClubRobots = () => {
   const [robots, setRobots] = useState([]);
@@ -8,10 +9,10 @@ const ClubRobots = () => {
   useEffect(() => {
     const cargarRobots = async () => {
       try {
-        const data = await getMisRobots();
-        setRobots(data);
-      } catch (error) {
-        console.error("Error cargando robots", error);
+        const res = await api.get("/api/club/robots");
+        setRobots(res.data);
+      } catch (err) {
+        console.error("Error cargando robots", err);
       } finally {
         setLoading(false);
       }
@@ -20,22 +21,29 @@ const ClubRobots = () => {
     cargarRobots();
   }, []);
 
-  if (loading) return <p>Cargando robots...</p>;
+  if (loading) {
+    return <div className="loader">Cargando robots…</div>;
+  }
 
   return (
-    <div>
-      <h2>Mis Robots</h2>
+    <div className="robots-container">
+      <h2 className="robots-title">Mis Robots</h2>
 
       {robots.length === 0 ? (
-        <p>No tienes robots registrados</p>
+        <p className="empty-state">No tienes robots registrados</p>
       ) : (
-        <ul>
+        <div className="robots-grid">
           {robots.map((robot) => (
-            <li key={robot.idRobot}>
-              <strong>{robot.nombre}</strong> – {robot.categoria} ({robot.nickname})
-            </li>
+            <div className="robot-card" key={robot.idRobot}>
+              <h3 className="robot-name">{robot.nombre}</h3>
+
+              <div className="robot-info">
+                <span className="robot-category">{robot.categoria}</span>
+                <span className="robot-nickname">@{robot.nickname}</span>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

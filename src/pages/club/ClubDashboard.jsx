@@ -1,47 +1,58 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../../services/axiosConfig";
 import "../../styles/ClubPanel.css";
 
 export default function ClubDashboard() {
-
   const [club, setClub] = useState(null);
   const [codigos, setCodigos] = useState([]);
 
   const entidad = JSON.parse(localStorage.getItem("entidad"));
   const idClub = entidad?.idClub;
 
+  // ============================
+  //     CARGAR DATOS DEL CLUB
+  // ============================
+  const cargarClub = useCallback(async () => {
+    try {
+      const res = await api.get(`/api/clubes/${idClub}`);
+      setClub(res.data);
+    } catch (err) {
+      console.error(err);
+      Swal.fire(
+        "Error",
+        "No se pudo cargar la información del club",
+        "error"
+      );
+    }
+  }, [idClub]);
+
+  // ============================
+  //     CARGAR CÓDIGOS
+  // ============================
+  const cargarCodigos = useCallback(async () => {
+    try {
+      const res = await api.get(`/api/codigos/club/${idClub}`);
+      setCodigos(res.data);
+    } catch (err) {
+      console.error(err);
+      Swal.fire(
+        "Error",
+        "No se pudieron cargar los códigos",
+        "error"
+      );
+    }
+  }, [idClub]);
+
+  // ============================
+  //     EFFECT
+  // ============================
   useEffect(() => {
     if (idClub) {
       cargarClub();
       cargarCodigos();
     }
-  }, [idClub]);
-
-  // ============================
-  //     CARGAR DATOS DEL CLUB
-  // ============================
-  const cargarClub = async () => {
-    try {
-      const res = await axios.get(`/api/clubes/${idClub}`);
-      setClub(res.data);
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "No se pudo cargar la información del club", "error");
-    }
-  };
-
-  // ============================
-  //     CARGAR CÓDIGOS
-  // ============================
-  const cargarCodigos = async () => {
-    try {
-      const res = await axios.get(`/api/codigos/club/${idClub}`);
-      setCodigos(res.data);
-    } catch {
-      Swal.fire("Error", "No se pudieron cargar los códigos", "error");
-    }
-  };
+  }, [idClub, cargarClub, cargarCodigos]);
 
   // ============================
   //     GENERAR CÓDIGO
@@ -67,7 +78,7 @@ export default function ClubDashboard() {
     if (!valores) return;
 
     try {
-      const res = await axios.post(
+      const res = await api.post(
         `/api/codigos/${idClub}/generar`,
         {
           horasExpiracion: Number(valores.horas),
@@ -75,7 +86,12 @@ export default function ClubDashboard() {
         }
       );
 
-      Swal.fire("Código generado", `Código: ${res.data.codigo}`, "success");
+      Swal.fire(
+        "Código generado",
+        `Código: ${res.data.codigo}`,
+        "success"
+      );
+
       cargarCodigos();
     } catch {
       Swal.fire("Error", "No se pudo generar el código", "error");
@@ -95,7 +111,9 @@ export default function ClubDashboard() {
         />
 
         <h2 className="club-name">{club.nombre}</h2>
-        <p className="club-desc">{club.descripcion || "Club de robótica"}</p>
+        <p className="club-desc">
+          {club.descripcion || "Club de robótica"}
+        </p>
 
         <div className="club-stats">
           <div>
@@ -156,3 +174,4 @@ export default function ClubDashboard() {
     </>
   );
 }
+
