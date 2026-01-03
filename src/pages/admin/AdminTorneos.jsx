@@ -195,6 +195,7 @@ export default function AdminTorneos() {
                   >
                     <option value="BORRADOR">BORRADOR</option>
                     <option value="INSCRIPCIONES_ABIERTAS">INSCRIPCIONES_ABIERTAS</option>
+                    <option value="INSCRIPCIONES_CERRADAS">INSCRIPCIONES_CERRADAS</option>
                     <option value="EN_PROGRESO">EN_PROGRESO</option>
                     <option value="FINALIZADO">FINALIZADO</option>
                   </select>
@@ -281,6 +282,7 @@ export default function AdminTorneos() {
               >
                 <option value="BORRADOR">BORRADOR</option>
                 <option value="INSCRIPCIONES_ABIERTAS">INSCRIPCIONES_ABIERTAS</option>
+                <option value="INSCRIPCIONES_CERRADAS">INSCRIPCIONES_CERRADAS</option>
                 <option value="EN_PROGRESO">EN_PROGRESO</option>
                 <option value="FINALIZADO">FINALIZADO</option>
               </select>
