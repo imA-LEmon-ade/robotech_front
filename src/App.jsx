@@ -23,6 +23,7 @@ import AdminCategoriasTorneo from "./pages/admin/AdminCategoriasTorneo";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminEncuentros from "./pages/admin/AdminEncuentros";
 import AdminGenerarEncuentros from "./pages/admin/AdminGenerarEncuentros";
+import AdminRobots from "./pages/admin/AdminRobots";
 
 // ===== SUBADMIN =====
 import SubAdminPanel from "./pages/SubAdminPanel";
@@ -74,6 +75,7 @@ function App() {
           <Route path="jueces" element={<AdminJueces />} />
           <Route path="torneos" element={<AdminTorneos />} />
           <Route path="encuentros" element={<AdminEncuentros />} />
+          <Route path="robots" element={<AdminRobots />} /> {/* 👈 */}
           <Route path="encuentros/:idCategoria" element={<AdminGenerarEncuentros />} />
           <Route
             path="torneos/:idTorneo/categorias"

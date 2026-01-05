@@ -14,13 +14,17 @@ export default function ClubInscribirIndividual({ categoria }) {
   // Cargar robots del club
   // ----------------------------------
   useEffect(() => {
-    api.get("/api/club/robots")
-      .then(res => setRobots(res.data))
-      .catch(() =>
-        Swal.fire("Error", "No se pudieron cargar los robots", "error")
-      )
-      .finally(() => setLoading(false));
-  }, []);
+  setLoading(true);
+
+  api.get(`/api/club/inscripciones/robots-disponibles/${categoria.idCategoriaTorneo}`)
+    .then(res => setRobots(res.data))
+    .catch(() =>
+      Swal.fire("Error", "No se pudieron cargar los robots", "error")
+    )
+    .finally(() => setLoading(false));
+
+}, [categoria.idCategoriaTorneo]);
+
 
   // ----------------------------------
   // Inscribir robot individual
