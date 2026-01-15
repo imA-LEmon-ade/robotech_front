@@ -28,8 +28,11 @@ export default function AdminGenerarEncuentros() {
 
   // Cargar jueces y coliseos
   useEffect(() => {
-    api.get("/api/admin/jueces/select").then(r => setJueces(r.data));
-    api.get("/api/admin/coliseos").then(r => setColiseos(r.data));
+    api.get("/admin/jueces")
+      .then(r => setJueces(r.data));
+
+    api.get("/admin/coliseos")
+      .then(r => setColiseos(r.data));
   }, []);
 
   const generar = async () => {
@@ -49,7 +52,13 @@ export default function AdminGenerarEncuentros() {
     console.log("📦 Payload enviado:", payload);
 
     try {
-      await api.post("/api/admin/encuentros/generar", payload);
+      await api.post("/admin/encuentros/generar", {
+        idCategoriaTorneo,
+        tipoEncuentro,
+        idJuez,
+        idColiseo
+      });
+      await api.post("/admin/encuentros/generar", payload);
 
       Swal.fire(
         "Encuentros generados",

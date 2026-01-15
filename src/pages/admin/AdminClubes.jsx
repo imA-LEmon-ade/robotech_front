@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
-import api from "../../services/api";
+import api from "../../services/axiosConfig"; // 👈 ÚNICO CAMBIO: Corregido para que cargue
 
 export default function Clubes() {
   const [busqueda, setBusqueda] = useState("");
@@ -110,7 +110,8 @@ export default function Clubes() {
   const cargarClubes = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/api/admin/clubes", {
+      // axiosConfig ya tiene /api, así que la ruta es /admin/clubes
+      const res = await api.get("/admin/clubes", {
         params: { nombre: busqueda }
       });
       setClubes(res.data);
@@ -204,15 +205,8 @@ export default function Clubes() {
   // =========================
   const guardarClub = async () => {
     try {
-      await api.put(`/api/admin/clubes/${editando.idClub}`, {
-        nombre: editando.nombre,
-        correoContacto: normalizarEmail(editando.correoContacto),
-        telefonoContacto: (editando.telefonoContacto || "").trim(),
-        direccionFiscal: editando.direccionFiscal,
-        estado: editando.estado
-      });
-
-      await Swal.fire("✔ Club actualizado", "", "success");
+      await api.put(`/admin/clubes/${editando.idClub}`, editando);
+      Swal.fire("✔ Club actualizado", "", "success");
       setEditando(null);
       cargarClubes();
     } catch (err) {
@@ -238,11 +232,8 @@ export default function Clubes() {
     if (!confirm.isConfirmed) return;
 
     try {
-      await api.put(`/api/admin/clubes/${club.idClub}`, {
-        nombre: club.nombre,
-        correoContacto: normalizarEmail(club.correoContacto),
-        telefonoContacto: (club.telefonoContacto || "").trim(),
-        direccionFiscal: club.direccionFiscal,
+      await api.put(`/admin/clubes/${club.idClub}`, {
+        ...club,
         estado: nuevoEstado
       });
 
