@@ -50,6 +50,8 @@ import CompetidorInscripciones from "./pages/Competidores/CompetidorInscripcione
 // ===== JUECES =====
 import JuezPanel from "./pages/Jueces/JuezPanel";
 import JuezDashboard from "./pages/jueces/JuezDashboard";
+import EncuentrosAsignados from "./pages/Jueces/EncuentrosAsignados";
+import CalificarEncuentro from "./pages/Jueces/CalificarEncuentro";
 
 function App() {
   return (
@@ -125,9 +127,14 @@ function App() {
 
         {/* ================= JUECES ================= */}
         <Route path="/juez" element={<JuezPanel />}>
-          <Route index element={<Navigate to="dashboard" />} />
+
+          {/* /juez → /juez/dashboard */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+
           <Route path="dashboard" element={<JuezDashboard />} />
-          {/* torneos, calificar */}
+          <Route path="encuentros" element={<EncuentrosAsignados />} />
+          <Route path="calificar/:idEncuentro" element={<CalificarEncuentro />} />
+
         </Route>
 
         {/* ================= FALLBACK ================= */}

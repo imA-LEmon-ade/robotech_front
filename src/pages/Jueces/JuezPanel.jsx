@@ -5,8 +5,8 @@ import Navbar from "../../components/Navbar";
 export default function JuezPanel() {
 
   const items = [
-    { label: "Torneos Asignados", to: "torneos" },
-    { label: "Calificar Competidores", to: "calificar" }
+    { label: "Torneos Asignados", to: "encuentros" },
+    { label: "Calificar Competidores", to: "calificar/:idEncuentro" }
   ];
 
   return (
