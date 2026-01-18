@@ -44,7 +44,7 @@ export default function Robots() {
       <Navbar />
       <div className="container py-5" style={{ minHeight: "80vh" }}>
         <div className="text-center mb-5">
-            <h2 className="fw-bold display-6 text-dark">Galería de Máquinas</h2>
+            <h2 className="fw-bold display-6 text-dark">Galería de Robots</h2>
             <p className="text-muted">Los protagonistas de la arena Robotech</p>
         </div>
 
