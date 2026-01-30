@@ -59,11 +59,12 @@ export default function AdminLogin() {
 
     } catch (err) {
       Swal.close();
-      Swal.fire(
-        "Error",
-        "Credenciales incorrectas o acceso no autorizado",
-        "error"
-      );
+      const data = err?.response?.data;
+      const msg =
+        typeof data === "string"
+          ? data
+          : data?.mensaje || data?.message || "Credenciales incorrectas o acceso no autorizado";
+      Swal.fire("Error", msg, "error");
     }
   };
 

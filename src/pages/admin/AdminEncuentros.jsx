@@ -131,7 +131,7 @@ export default function AdminEncuentros() {
         <div className="row g-4">
           {categoriasFiltradas.map(cat => (
             <div key={cat.idCategoriaTorneo} className="col-md-6 col-lg-4 col-xl-3">
-              <div className="card h-100 shadow-sm border-0 hover-effect">
+              <div className={`card h-100 shadow-sm hover-effect border border-2 ${cat.hasEncuentros ? "border-success" : "border-danger"}`}>
                 
                 {/* Cabecera de Tarjeta: Estado */}
                 <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-3 pb-0">
@@ -152,10 +152,15 @@ export default function AdminEncuentros() {
                      {cat.categoria}
                   </h6>
 
-                  <div className="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded">
+                  <div className="d-flex align-items-center gap-2 mb-2 bg-light p-2 rounded">
                      <FaUsers className="text-muted"/>
                      <span className="fw-bold text-dark">{cat.inscritos}</span>
                      <span className="text-muted small">/ {cat.maxParticipantes} inscritos</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <span className={`badge rounded-pill ${cat.hasEncuentros ? "bg-success" : "bg-danger"}`}>
+                      {cat.hasEncuentros ? "Encuentros generados" : "Sin encuentros"}
+                    </span>
                   </div>
 
                   {/* Barra de progreso de cupos */}

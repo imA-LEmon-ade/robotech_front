@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../services/axiosConfig";
 import "../../styles/ClubRobots.css";
 
@@ -25,9 +26,18 @@ const ClubRobots = () => {
     return <div className="loader">Cargando robots…</div>;
   }
 
+  const rol = localStorage.getItem("rol") || "";
+
   return (
     <div className="robots-container">
-      <h2 className="robots-title">Mis Robots</h2>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+        <h2 className="robots-title mb-0">Mis Robots</h2>
+        {rol === "CLUB_COMPETIDOR" && (
+          <Link className="btn btn-outline-primary btn-sm" to="/competidor/robots">
+            Registrar mis robots personales
+          </Link>
+        )}
+      </div>
 
       {robots.length === 0 ? (
         <p className="empty-state">No tienes robots registrados</p>

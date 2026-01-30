@@ -12,6 +12,7 @@ export default function ClubPanel() {
   const items = [
     { label: "Gestión Competidores", to: "competidores", icon: <FaUsers /> },
     { label: "Flota de Robots", to: "robots", icon: <FaRobot /> },
+    { label: "Transferencias", to: "transferencias", icon: <FaExchangeAlt /> },
     { label: "Torneos Disponibles", to: "torneos", icon: <FaTrophy /> },
     { label: "Inscripciones", to: "inscripciones", icon: <FaClipboardList /> }
   ];

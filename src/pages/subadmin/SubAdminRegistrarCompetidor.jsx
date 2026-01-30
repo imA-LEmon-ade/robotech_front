@@ -223,7 +223,14 @@ export default function SubAdminRegistrarCompetidor() {
                     <label className="form-label small fw-bold text-muted text-uppercase">Documento de Identidad *</label>
                     <div className="input-group">
                       <span className="input-group-text bg-light border-0"><FaIdCard className="text-muted"/></span>
-                      <input className="form-control bg-light border-0 shadow-none" value={form.dni} onChange={e => setForm({...form, dni: e.target.value})} placeholder="8 dígitos" />
+                      <input
+                        className="form-control bg-light border-0 shadow-none"
+                        value={form.dni}
+                        onChange={e => setForm({ ...form, dni: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+                        placeholder="8 dígitos"
+                        inputMode="numeric"
+                        maxLength={8}
+                      />
                       <button type="button" className="btn btn-info text-white fw-bold px-4 shadow-none" onClick={cargarPorDni}>CONSULTAR</button>
                     </div>
                   </div>
@@ -243,7 +250,15 @@ export default function SubAdminRegistrarCompetidor() {
                     <label className="form-label small fw-bold text-muted text-uppercase">Teléfono</label>
                     <div className="input-group">
                         <span className="input-group-text bg-light border-0"><FaPhone className="text-muted" size={12}/></span>
-                        <input type="tel" className="form-control bg-light border-0 py-2 shadow-none" value={form.telefono} onChange={e => setForm({...form, telefono: e.target.value})} placeholder="987654321" />
+                        <input
+                          type="tel"
+                          className="form-control bg-light border-0 py-2 shadow-none"
+                          value={form.telefono}
+                          onChange={e => setForm({ ...form, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })}
+                          placeholder="987654321"
+                          inputMode="numeric"
+                          maxLength={9}
+                        />
                     </div>
                   </div>
 

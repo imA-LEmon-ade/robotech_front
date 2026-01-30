@@ -229,7 +229,7 @@ export default function Clubes() {
                   <div className="row g-3 mb-4">
                     <div className="col-12"><label className="form-label small text-muted fw-bold">Nombre del Club</label><input className="form-control" value={form.nombre} onChange={(e) => setField("nombre", e.target.value)} /></div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Correo Contacto</label><input className="form-control" value={form.correoContacto} onChange={(e) => setField("correoContacto", e.target.value)} /></div>
-                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Contacto</label><input className="form-control" value={form.telefonoContacto} onChange={(e) => setField("telefonoContacto", e.target.value)} /></div>
+                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Contacto</label><input className="form-control" value={form.telefonoContacto} onChange={(e) => setField("telefonoContacto", e.target.value.replace(/\D/g, "").slice(0, 9))} inputMode="numeric" maxLength={9} /></div>
                     <div className="col-12"><label className="form-label small text-muted fw-bold">Dirección Fiscal</label><input className="form-control" value={form.direccionFiscal} onChange={(e) => setField("direccionFiscal", e.target.value)} /></div>
                   </div>
                   <hr className="text-muted"/>
@@ -238,14 +238,14 @@ export default function Clubes() {
                     <div className="col-md-6">
                       <label className="form-label small text-muted fw-bold">DNI del Propietario</label>
                       <div className="input-group">
-                        <input className="form-control" value={form.dniPropietario} onChange={(e) => setField("dniPropietario", e.target.value)} />
+                        <input className="form-control" value={form.dniPropietario} onChange={(e) => setField("dniPropietario", e.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" maxLength={8} />
                         <button className="btn btn-outline-info" onClick={cargarPorDni}>Cargar</button>
                       </div>
                     </div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Nombres</label><input className="form-control" value={form.nombresPropietario} readOnly /></div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Apellidos</label><input className="form-control" value={form.apellidosPropietario} readOnly /></div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Correo Propietario</label><input className="form-control" value={form.correoPropietario} onChange={(e) => setField("correoPropietario", e.target.value)} /></div>
-                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Propietario</label><input className="form-control" value={form.telefonoPropietario} onChange={(e) => setField("telefonoPropietario", e.target.value)} /></div>
+                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Propietario</label><input className="form-control" value={form.telefonoPropietario} onChange={(e) => setField("telefonoPropietario", e.target.value.replace(/\D/g, "").slice(0, 9))} inputMode="numeric" maxLength={9} /></div>
                     <div className="col-12"><label className="form-label small text-muted fw-bold">Contraseña Inicial</label><input type="password" className="form-control" value={form.contrasenaPropietario} onChange={(e) => setField("contrasenaPropietario", e.target.value)} /></div>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export default function Clubes() {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label fw-bold small text-muted">Teléfono Contacto</label>
-                      <input className="form-control" value={editando.telefonoContacto} onChange={(e) => setEditando({ ...editando, telefonoContacto: e.target.value })} />
+                      <input className="form-control" value={editando.telefonoContacto} onChange={(e) => setEditando({ ...editando, telefonoContacto: e.target.value.replace(/\D/g, "").slice(0, 9) })} inputMode="numeric" maxLength={9} />
                     </div>
                     <div className="col-12">
                       <label className="form-label fw-bold small text-muted">Dirección Fiscal</label>
@@ -295,11 +295,11 @@ export default function Clubes() {
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label className="form-label small text-muted fw-bold">DNI del Propietario</label>
-                      <input className="form-control" value={editando.dniPropietario} onChange={(e) => setEditando({ ...editando, dniPropietario: e.target.value })} />
+                      <input className="form-control" value={editando.dniPropietario} onChange={(e) => setEditando({ ...editando, dniPropietario: e.target.value.replace(/\D/g, "").slice(0, 8) })} inputMode="numeric" maxLength={8} />
                     </div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Nombres</label><input className="form-control" value={editando.nombresPropietario} onChange={(e) => setEditando({ ...editando, nombresPropietario: e.target.value })} /></div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Apellidos</label><input className="form-control" value={editando.apellidosPropietario} onChange={(e) => setEditando({ ...editando, apellidosPropietario: e.target.value })} /></div>
-                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Propietario</label><input className="form-control" value={editando.telefonoPropietario} onChange={(e) => setEditando({ ...editando, telefonoPropietario: e.target.value })} /></div>
+                    <div className="col-md-6"><label className="form-label small text-muted fw-bold">Teléfono Propietario</label><input className="form-control" value={editando.telefonoPropietario} onChange={(e) => setEditando({ ...editando, telefonoPropietario: e.target.value.replace(/\D/g, "").slice(0, 9) })} inputMode="numeric" maxLength={9} /></div>
                   </div>
                 </div>
                 <div className="modal-footer bg-light">

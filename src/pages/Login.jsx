@@ -59,6 +59,7 @@ export default function Login() {
         CLUB: "/club",
         COMPETIDOR: "/competidor",
         JUEZ: "/juez",
+        CLUB_COMPETIDOR: "/club",
       };
 
       navigate(rutasPorRol[rol] || "/");

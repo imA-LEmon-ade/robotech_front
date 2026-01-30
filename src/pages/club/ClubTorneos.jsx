@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/axiosConfig";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import "../../styles/clubTorneos.css";
 
@@ -7,7 +8,6 @@ export default function ClubTorneos() {
   const [torneos, setTorneos] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const formatearFecha = useMemo(() => {
     return (iso) =>
@@ -23,21 +23,23 @@ export default function ClubTorneos() {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:8080/api/club/torneos/disponibles",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await api.get("/club/torneos/disponibles");
         setTorneos(res.data);
       } catch (err) {
         console.error(err);
-        alert("Error cargando torneos");
+        const msg =
+          err?.response?.data?.mensaje ||
+          err?.response?.data?.message ||
+          err?.response?.data ||
+          "Error cargando torneos";
+        Swal.fire("Error", msg, "error");
       } finally {
         setLoading(false);
       }
     };
 
     cargar();
-  }, [token]);
+  }, []);
 
   return (
     <div className="container mt-4">

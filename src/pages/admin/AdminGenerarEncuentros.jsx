@@ -14,6 +14,8 @@ export default function AdminGenerarEncuentros() {
   const [coliseos, setColiseos] = useState([]);
   const [idJuez, setIdJuez] = useState("");
   const [idColiseo, setIdColiseo] = useState("");
+  const [hasEncuentros, setHasEncuentros] = useState(false);
+  const [categoriaInfo, setCategoriaInfo] = useState(null);
   
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -31,12 +33,17 @@ export default function AdminGenerarEncuentros() {
     const fetchData = async () => {
       try {
         // Carga paralela de listas auxiliares
-        const [resJueces, resColiseos] = await Promise.all([
+        const [resJueces, resColiseos, resCategorias] = await Promise.all([
           api.get("/admin/jueces"),
-          api.get("/admin/coliseos")
+          api.get("/admin/coliseos"),
+          api.get("/admin/encuentros/categorias")
         ]);
         setJueces(resJueces.data || []);
         setColiseos(resColiseos.data || []);
+        const categorias = Array.isArray(resCategorias.data) ? resCategorias.data : [];
+        const cat = categorias.find(c => c.idCategoriaTorneo === idCategoriaTorneo) || null;
+        setCategoriaInfo(cat);
+        setHasEncuentros(!!cat?.hasEncuentros);
       } catch (error) {
         console.error("Error cargando datos:", error);
         Swal.fire("Error", "No se pudieron cargar las listas de jueces/coliseos", "error");
@@ -59,11 +66,13 @@ export default function AdminGenerarEncuentros() {
 
     // B. Confirmación de usuario
     const result = await Swal.fire({
-      title: "¿Generar Encuentros?",
-      text: "El backend creará los cruces automáticamente basándose en los inscritos.",
+      title: hasEncuentros ? "¿Regenerar Encuentros?" : "¿Generar Encuentros?",
+      text: hasEncuentros
+        ? "Esto borrará los encuentros existentes y creará nuevos cruces automáticamente."
+        : "El backend creará los cruces automáticamente basándose en los inscritos.",
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Sí, generar",
+      confirmButtonText: hasEncuentros ? "Sí, regenerar" : "Sí, generar",
       cancelButtonText: "Cancelar"
     });
 
@@ -81,12 +90,13 @@ export default function AdminGenerarEncuentros() {
 
     try {
       // D. Petición al Backend (El cerebro de la operación)
-      await api.post("/admin/encuentros/generar", payload);
+      const endpoint = hasEncuentros ? "/admin/encuentros/regenerar" : "/admin/encuentros/generar";
+      await api.post(endpoint, payload);
       
       await Swal.fire({
         icon: 'success',
-        title: '¡Generado!',
-        text: 'Los encuentros han sido creados exitosamente.',
+        title: hasEncuentros ? '¡Regenerado!' : '¡Generado!',
+        text: hasEncuentros ? 'Los encuentros han sido regenerados exitosamente.' : 'Los encuentros han sido creados exitosamente.',
         timer: 2000
       });
       
@@ -133,6 +143,11 @@ export default function AdminGenerarEncuentros() {
               <p className="text-muted mb-4">
                 Configura los parámetros para generar automáticamente los cruces de esta categoría.
               </p>
+              {categoriaInfo && (
+                <div className={`alert ${hasEncuentros ? "alert-success" : "alert-warning"} py-2`}>
+                  {hasEncuentros ? "Esta categoría ya tiene encuentros generados." : "Esta categoría aún no tiene encuentros generados."}
+                </div>
+              )}
 
               {/* MODALIDAD */}
               <div className="mb-3">
@@ -200,7 +215,7 @@ export default function AdminGenerarEncuentros() {
                   {generating ? (
                     <>Generando... <span className="spinner-border spinner-border-sm ms-2"/> </>
                   ) : (
-                    <><FaCheck className="me-2"/> Generar Encuentros</>
+                    <><FaCheck className="me-2"/> {hasEncuentros ? "Regenerar Encuentros" : "Generar Encuentros"}</>
                   )}
                 </button>
                 

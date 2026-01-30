@@ -217,7 +217,7 @@ export default function SubAdminRegistrarClub() {
                   <h6 className="fw-bold text-primary mb-3 text-uppercase small">Información del Club</h6>
                   <div className="mb-3"><label className="form-label small fw-bold text-muted">NOMBRE *</label><input className="form-control bg-light border-0" value={form.nombre} onChange={(e) => setForm({...form, nombre: e.target.value})} required /></div>
                   <div className="mb-3"><label className="form-label small fw-bold text-muted">CORREO CONTACTO *</label><input type="email" className="form-control bg-light border-0" value={form.correoContacto} onChange={(e) => setForm({...form, correoContacto: e.target.value})} required /></div>
-                  <div className="mb-3"><label className="form-label small fw-bold text-muted">TELÉFONO CONTACTO *</label><input className="form-control bg-light border-0" value={form.telefonoContacto} onChange={(e) => setForm({...form, telefonoContacto: e.target.value})} required /></div>
+                  <div className="mb-3"><label className="form-label small fw-bold text-muted">TELÉFONO CONTACTO *</label><input className="form-control bg-light border-0" value={form.telefonoContacto} onChange={(e) => setForm({ ...form, telefonoContacto: e.target.value.replace(/\D/g, "").slice(0, 9) })} inputMode="numeric" maxLength={9} required /></div>
                   <div className="mb-3"><label className="form-label small fw-bold text-muted">DIRECCIÓN FISCAL</label><input className="form-control bg-light border-0" value={form.direccionFiscal} onChange={(e) => setForm({...form, direccionFiscal: e.target.value})} /></div>
                 </div>
 
@@ -227,7 +227,7 @@ export default function SubAdminRegistrarClub() {
                     <label className="form-label small fw-bold text-muted">DNI PROPIETARIO *</label>
                     <div className="input-group">
                       <span className="input-group-text bg-white border-end-0"><FaIdCard className="text-muted"/></span>
-                      <input className="form-control bg-white border-start-0" value={form.dniPropietario} onChange={(e) => setForm({...form, dniPropietario: e.target.value})} required />
+                      <input className="form-control bg-white border-start-0" value={form.dniPropietario} onChange={(e) => setForm({ ...form, dniPropietario: e.target.value.replace(/\D/g, "").slice(0, 8) })} inputMode="numeric" maxLength={8} required />
                       <button type="button" className="btn btn-info text-white fw-bold px-3" onClick={cargarPorDni}>DNI</button>
                     </div>
                   </div>
@@ -241,7 +241,7 @@ export default function SubAdminRegistrarClub() {
                   </div>
                   <div className="mb-3">
                     <label className="form-label small fw-bold text-muted">TELÉFONO PROPIETARIO</label>
-                    <input className="form-control bg-white" value={form.telefonoPropietario} onChange={(e) => setForm({...form, telefonoPropietario: e.target.value})} />
+                    <input className="form-control bg-white" value={form.telefonoPropietario} onChange={(e) => setForm({ ...form, telefonoPropietario: e.target.value.replace(/\D/g, "").slice(0, 9) })} inputMode="numeric" maxLength={9} />
                   </div>
                   
                   {!editingId && (

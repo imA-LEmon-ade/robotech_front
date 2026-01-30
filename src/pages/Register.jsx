@@ -293,6 +293,7 @@ export default function Register() {
                 value={form.dni}
                 onChange={cambiar}
                 maxLength="8"
+                inputMode="numeric"
                 required
               />
 
@@ -326,6 +327,7 @@ export default function Register() {
               value={form.telefono}
               onChange={cambiar}
               maxLength="9"
+              inputMode="numeric"
               required
             />
             <div className="invalid-feedback">{errores.telefono}</div>

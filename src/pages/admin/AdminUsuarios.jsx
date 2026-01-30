@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
-import { FaUserPlus, FaEdit, FaTrash, FaKey, FaSearch, FaUserShield, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaUserPlus, FaEdit, FaTrash, FaKey, FaSearch, FaUserShield, FaEnvelope, FaPhone, FaUserCheck } from "react-icons/fa";
 import api from "../../services/axiosConfig"; // Asegúrate de que apunte a tu configuración de axios
 import { consultarDni } from "../../services/dniService";
 
-const ROLES = ["ADMINISTRADOR", "SUBADMINISTRADOR", "JUEZ", "CLUB", "COMPETIDOR"];
+const ROLES = ["ADMINISTRADOR", "SUBADMINISTRADOR", "JUEZ", "CLUB", "COMPETIDOR", "CLUB_COMPETIDOR"];
 const ESTADOS = ["ACTIVO", "INACTIVO", "PENDIENTE"];
 
 export default function AdminUsuarios() {
@@ -212,6 +212,27 @@ export default function AdminUsuarios() {
     }
   };
 
+  const habilitarPropietario = async (idUsuario) => {
+    const confirm = await Swal.fire({
+      title: "¿Habilitar como competidor?",
+      text: "Se creará el perfil competidor para el propietario del club.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, habilitar",
+      cancelButtonText: "Cancelar"
+    });
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await api.put(`/admin/club/usuario/${idUsuario}/habilitar-competidor`);
+      Swal.fire("Éxito", "Propietario habilitado como competidor.", "success");
+      cargar();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data || "No se pudo habilitar";
+      Swal.fire("Error", msg, "error");
+    }
+  };
+
   // ============================
   // RENDER UI (Sin cambios visuales)
   // ============================
@@ -325,6 +346,12 @@ export default function AdminUsuarios() {
                       {/* COLUMNA ACCIONES */}
                       <td className="text-end pe-4">
                         <div className="btn-group">
+                          {u.rol === "CLUB" && (
+                            <button className="btn btn-outline-success btn-sm" title="Habilitar como competidor"
+                                    onClick={() => habilitarPropietario(u.idUsuario)}>
+                              <FaUserCheck />
+                            </button>
+                          )}
                           <button className="btn btn-outline-secondary btn-sm" title="Cambiar Contraseña" 
                                   onClick={() => { setPassId(u.idUsuario); setNewPass(""); setModalPass(true); }}>
                             <FaKey />
@@ -364,8 +391,10 @@ export default function AdminUsuarios() {
                     <input
                       className="form-control"
                       value={form.dni}
-                      onChange={e => setForm({ ...form, dni: e.target.value })}
+                      onChange={e => setForm({ ...form, dni: e.target.value.replace(/\D/g, "").slice(0, 8) })}
                       placeholder="Documento de identidad"
+                      inputMode="numeric"
+                      maxLength={8}
                     />
                     <button
                       className="btn btn-outline-info"
@@ -389,7 +418,13 @@ export default function AdminUsuarios() {
                   </div>
                   <div className="col-6">
                     <label className="form-label small fw-bold">Teléfono</label>
-                    <input className="form-control" value={form.telefono} onChange={e => setForm({...form, telefono: e.target.value})} />
+                    <input
+                      className="form-control"
+                      value={form.telefono}
+                      onChange={e => setForm({ ...form, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })}
+                      inputMode="numeric"
+                      maxLength={9}
+                    />
                   </div>
                   <div className="col-6">
                     <label className="form-label small fw-bold">Rol *</label>

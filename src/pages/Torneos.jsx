@@ -2,8 +2,9 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "../styles/torneos.css";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/axiosConfig";
-import { FaTrophy, FaMedal, FaAward, FaCalendarAlt, FaInfoCircle } from "react-icons/fa";
+import { FaTrophy, FaMedal, FaAward, FaCalendarAlt, FaInfoCircle, FaGamepad } from "react-icons/fa";
 
 export default function Torneos() {
   const [torneos, setTorneos] = useState([]);
@@ -11,6 +12,8 @@ export default function Torneos() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
   const [torneoSeleccionado, setTorneoSeleccionado] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+  const [loadingCategorias, setLoadingCategorias] = useState(false);
 
   useEffect(() => {
     cargarTorneos();
@@ -29,6 +32,25 @@ export default function Torneos() {
   };
 
   const cerrarModal = () => setTorneoSeleccionado(null);
+
+  useEffect(() => {
+    const cargarCategorias = async () => {
+      if (!torneoSeleccionado?.idTorneo) return;
+      setCategorias([]);
+      setLoadingCategorias(true);
+      try {
+        const res = await api.get(`/public/torneos/${torneoSeleccionado.idTorneo}/categorias`);
+        setCategorias(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error("Error cargando categorías", err);
+        setCategorias([]);
+      } finally {
+        setLoadingCategorias(false);
+      }
+    };
+
+    cargarCategorias();
+  }, [torneoSeleccionado]);
 
   const getBadgeColor = (estado) => {
     switch (estado) {
@@ -174,6 +196,32 @@ export default function Torneos() {
                   </div>
                 </div>
               )}
+
+              <div className="mt-4">
+                <h5 className="fw-bold mb-3"><FaGamepad className="me-2 text-warning" />Categorías y Encuentros</h5>
+                {loadingCategorias ? (
+                  <div className="text-center text-muted py-3">Cargando categorías...</div>
+                ) : categorias.length === 0 ? (
+                  <div className="text-center text-muted py-3">No hay categorías visibles.</div>
+                ) : (
+                  <div className="row g-3">
+                    {categorias.map((c) => (
+                      <div key={c.idCategoriaTorneo} className="col-12 col-md-6">
+                        <div className="border rounded-3 p-3 h-100 d-flex flex-column gap-2">
+                          <div className="fw-bold text-dark">{c.categoria}</div>
+                          <div className="text-muted small">{c.modalidad}</div>
+                          <Link
+                            className="btn btn-outline-dark btn-sm mt-auto"
+                            to={`/torneos/${torneoSeleccionado.idTorneo}/categorias/${c.idCategoriaTorneo}/encuentros`}
+                          >
+                            Ver cuadro de encuentros
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               
               <div className="mt-4 pt-3 border-top text-center">
                  <button className="btn btn-secondary px-5" onClick={cerrarModal}>Cerrar</button>

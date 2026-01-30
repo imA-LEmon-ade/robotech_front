@@ -231,7 +231,9 @@ export default function SubAdministradores() {
                         className="form-control"
                         placeholder="DNI"
                         value={form.dni}
-                        onChange={e => setField("dni", e.target.value)}
+                        onChange={e => setField("dni", e.target.value.replace(/\D/g, "").slice(0, 8))}
+                        inputMode="numeric"
+                        maxLength={8}
                       />
                       <button
                         type="button"
@@ -247,16 +249,21 @@ export default function SubAdministradores() {
                 {/* RESTO DE CAMPOS */}
                 {["nombres", "apellidos", "correo", "telefono", "contrasena"]
                   .filter(k => !editando || !["correo", "contrasena"].includes(k))
-                  .map(k => (
-                    <input
-                      key={k}
-                      className="form-control mb-2"
-                      placeholder={k}
-                      value={form[k]}
-                      onChange={e => setField(k, e.target.value)}
-                      type={k === "contrasena" ? "password" : "text"}
-                    />
-                  ))}
+                  .map(k => {
+                    const isTelefono = k === "telefono";
+                    return (
+                      <input
+                        key={k}
+                        className="form-control mb-2"
+                        placeholder={k}
+                        value={form[k]}
+                        onChange={e => setField(k, isTelefono ? e.target.value.replace(/\D/g, "").slice(0, 9) : e.target.value)}
+                        type={k === "contrasena" ? "password" : isTelefono ? "tel" : "text"}
+                        inputMode={isTelefono ? "numeric" : undefined}
+                        maxLength={isTelefono ? 9 : undefined}
+                      />
+                    );
+                  })}
 
               </div>
 

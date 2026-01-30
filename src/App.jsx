@@ -12,6 +12,7 @@ import Clubes from "./pages/Clubes";
 import Competidores from "./pages/Competidores";
 import Robots from "./pages/Robots";
 import Rankings from "./pages/Rankings";
+import EncuentrosPublicos from "./pages/EncuentrosPublicos";
 
 // ===== ADMIN =====
 import AdminPanel from "./pages/admin/AdminPanel";
@@ -45,6 +46,7 @@ import ClubTorneos from "./pages/club/ClubTorneos";
 import ClubCategoriasTorneo from "./pages/club/ClubCategoriasTorneo";
 import ClubInscribir from "./pages/club/ClubInscribir";
 import ClubInscripciones from "./pages/club/ClubInscripciones";
+import ClubTransferencias from "./pages/club/ClubTransferencias";
 
 // ===== COMPETIDORES =====
 import CompetidorPanel from "./pages/Competidores/CompetidorPanel";
@@ -74,6 +76,10 @@ function App() {
         <Route path="/competidores" element={<Competidores />} />
         <Route path="/robots" element={<Robots />} />
         <Route path="/rankings" element={<Rankings />} />
+        <Route
+          path="/torneos/:idTorneo/categorias/:idCategoriaTorneo/encuentros"
+          element={<EncuentrosPublicos />}
+        />
 
         {/* ================= ADMIN ================= */}
         <Route path="/admin" element={<AdminPanel />}>
@@ -117,6 +123,7 @@ function App() {
           <Route path="dashboard" element={<ClubDashboard />} />
           <Route path="competidores" element={<ClubCompetidores />} />
           <Route path="robots" element={<ClubRobots />} />
+          <Route path="transferencias" element={<ClubTransferencias />} />
           <Route path="torneos" element={<ClubTorneos />} />
           <Route path="inscripciones" element={<ClubInscripciones />} />
           <Route

@@ -84,7 +84,7 @@ export default function Navbar() {
               </li>
             )}
 
-            {rol === "COMPETIDOR" && (
+            {(rol === "COMPETIDOR" || rol === "CLUB_COMPETIDOR") && (
               <li className="nav-item">
                 <NavLink className={getNavLinkClass} to="/competidor">Mi Perfil</NavLink>
               </li>
@@ -96,7 +96,7 @@ export default function Navbar() {
               </li>
             )}
 
-            {rol === "CLUB" && (
+            {(rol === "CLUB" || rol === "CLUB_COMPETIDOR") && (
               <li className="nav-item">
                 <NavLink className={getNavLinkClass} to="/club">Panel Club</NavLink>
               </li>

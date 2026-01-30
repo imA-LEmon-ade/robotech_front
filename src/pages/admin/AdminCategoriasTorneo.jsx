@@ -137,14 +137,16 @@ export default function AdminCategoriasTorneo() {
     if (!confirm.isConfirmed) return;
 
     try {
-      await api.delete(
+      const res = await api.delete(
         `http://localhost:8080/api/admin/categorias-torneo/${id}`
       );
-      Swal.fire("Eliminado", "", "success");
+      const msg = typeof res?.data === "string" ? res.data : "Categoría eliminada";
+      Swal.fire("Eliminado", msg, "success");
       cargar();
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "No se pudo eliminar", "error");
+      const msg = err.response?.data?.message || err.response?.data || "No se pudo eliminar";
+      Swal.fire("Error", msg, "error");
     }
   };
 

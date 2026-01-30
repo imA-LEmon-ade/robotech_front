@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // 1. IMPORTAR useNavigate
-import axios from "axios";
+import api from "../../services/axiosConfig";
 import Swal from "sweetalert2";
 import "../../styles/CompetidorDashboard.css";
 
@@ -35,10 +35,9 @@ export default function CompetidorDashboard() {
   // =============================
   const storedUser = localStorage.getItem("usuario");
   const entidad = storedUser ? JSON.parse(storedUser) : null;
-  const token = localStorage.getItem("token");
   const idCompetidor = entidad?.idCompetidor;
 
-  if (!entidad || !idCompetidor || !token) {
+  if (!entidad || !idCompetidor) {
     return <p>No autorizado. Inicia sesión nuevamente.</p>;
   }
 
@@ -51,14 +50,7 @@ export default function CompetidorDashboard() {
 
   const cargarPerfil = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:8080/api/competidores/${idCompetidor}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await api.get(`/competidores/${idCompetidor}`);
 
       setCompetidor(res.data);
       setForm({
@@ -141,13 +133,7 @@ export default function CompetidorDashboard() {
     }
 
     try {
-      await axios.put(
-        `http://localhost:8080/api/competidores/${idCompetidor}`,
-        form, 
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      await api.put(`/competidores/${idCompetidor}`, form);
 
       // 3. VERIFICAMOS SI CAMBIÓ EL CORREO
       if (form.correo !== competidor.correo) {
@@ -201,14 +187,11 @@ export default function CompetidorDashboard() {
 
     try {
       setSubiendoFoto(true);
-      await axios.post(
-        `http://localhost:8080/api/competidores/${idCompetidor}/foto`,
+      await api.post(
+        `/competidores/${idCompetidor}/foto`,
         formData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
-          }
+          headers: { "Content-Type": "multipart/form-data" }
         }
       );
       Swal.fire("Foto actualizada", "", "success");
@@ -327,6 +310,8 @@ export default function CompetidorDashboard() {
                 value={form.dni}
                 onChange={cambiar}
                 placeholder="8 dígitos"
+                inputMode="numeric"
+                maxLength={8}
               />
               {errores.dni && <small className="text-danger">{errores.dni}</small>}
             </>
@@ -381,6 +366,8 @@ export default function CompetidorDashboard() {
                 name="telefono"
                 value={form.telefono}
                 onChange={cambiar}
+                inputMode="numeric"
+                maxLength={9}
               />
               {errores.telefono && <small className="text-danger">{errores.telefono}</small>}
             </>

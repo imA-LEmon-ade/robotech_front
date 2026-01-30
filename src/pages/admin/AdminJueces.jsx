@@ -307,8 +307,10 @@ export default function AdminJueces() {
                 <input
                   className="form-control rounded-3 bg-light border-0 py-2"
                   value={form.dni}
-                  onChange={e => setForm({ ...form, dni: e.target.value })}
+                  onChange={e => setForm({ ...form, dni: e.target.value.replace(/\D/g, "").slice(0, 8) })}
                   placeholder="Documento de identidad"
+                  inputMode="numeric"
+                  maxLength={8}
                 />
                  <button
                       className="btn btn-outline-info"
@@ -336,7 +338,15 @@ export default function AdminJueces() {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold text-muted small">TELÉFONO (OPCIONAL)</label>
-                    <input type="tel" className="form-control rounded-3 bg-light border-0 py-2" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} placeholder="987654321" />
+                    <input
+                      type="tel"
+                      className="form-control rounded-3 bg-light border-0 py-2"
+                      value={form.telefono}
+                      onChange={e => setForm({ ...form, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })}
+                      placeholder="987654321"
+                      inputMode="numeric"
+                      maxLength={9}
+                    />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold text-muted small">N° LICENCIA *</label>
