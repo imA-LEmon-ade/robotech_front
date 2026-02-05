@@ -17,3 +17,11 @@ export const login = async (correo, contrasena) => {
 export const logout = () => {
   localStorage.clear();
 };
+
+export const requestPasswordReset = async (email) => {
+  return await api.post("/auth/request-password-reset", { email });
+};
+
+export const resetPassword = async (token, newPassword) => {
+  return await api.post("/auth/reset-password", { token, newPassword });
+};

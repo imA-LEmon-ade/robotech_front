@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 // 1. Agregamos 'Link' a la importación
-import { useNavigate, Link } from "react-router-dom"; 
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import AuthContext from "../context/AuthContext";
@@ -32,7 +32,7 @@ export default function Login() {
 
       const { token, rol, entidad } = data;
 
-      // ⛔ Bloquear administradores
+      // Bloquear administradores
       if (rol === "ADMINISTRADOR" || rol === "SUBADMINISTRADOR") {
         await Swal.fire({
           icon: "warning",
@@ -42,7 +42,7 @@ export default function Login() {
         return;
       }
 
-      // ✅ Guardar sesión
+      // Guardar sesión
       login({
         token,
         rol,
@@ -137,9 +137,9 @@ export default function Login() {
               </button>
 
               <div className="text-center">
-                <a href="#" className="small text-muted d-block mb-2">
+                <Link to="/request-password-reset" className="small text-muted d-block mb-2">
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
                 <p className="small mb-0">
                   ¿No tienes cuenta?{" "}
                   {/* 2. Aquí cambiamos el <a> por <Link> */}
