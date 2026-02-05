@@ -1,12 +1,14 @@
 import axios from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
 
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
 
+  // ... (ingresar function remains the same) ...
   const ingresar = async (e) => {
     e.preventDefault();
 
@@ -27,23 +29,30 @@ export default function AdminLogin() {
 
       Swal.close();
 
-      // ✅ Guardar datos correctamente
+      // Normalizar rol (el backend devuelve "roles" como array)
+      const roles = res.data.roles || (res.data.rol ? [res.data.rol] : []);
+      const rol =
+        roles.includes("ADMINISTRADOR") ? "ADMINISTRADOR" :
+        roles.includes("SUBADMINISTRADOR") ? "SUBADMINISTRADOR" :
+        "";
+
+      // Guardar datos correctamente
       localStorage.setItem("usuario", JSON.stringify(res.data.usuario));
-      localStorage.setItem("rol", res.data.rol);
+      localStorage.setItem("rol", rol);
       localStorage.setItem("token", res.data.token);
 
-      // ✅ Configurar axios para futuras peticiones protegidas
+      // Configurar axios para futuras peticiones protegidas
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${res.data.token}`;
 
       Swal.fire({
         icon: "success",
         title: "Bienvenido",
-        text: `${res.data.usuario.correo} (${res.data.rol})`
+        text: `${res.data.usuario.correo} (${rol || "SIN_ROL"})`
       });
 
-      // ✅ Redirección CORRECTA según rol real de la BD
-      switch (res.data.rol) {
+      // Redirección CORRECTA según rol real de la BD
+      switch (rol) {
         case "ADMINISTRADOR":
           window.location.href = "/admin";
           break;
@@ -103,6 +112,11 @@ export default function AdminLogin() {
           <button className="btn btn-danger w-100" type="submit">
             Ingresar
           </button>
+          <div className="text-center mt-3">
+            <Link to="/request-password-reset" className="small text-muted">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </form>
       </div>
     </div>
