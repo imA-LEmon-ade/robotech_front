@@ -1,12 +1,14 @@
 import axios from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
 
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
 
+  // ... (ingresar function remains the same) ...
   const ingresar = async (e) => {
     e.preventDefault();
 
@@ -27,35 +29,42 @@ export default function AdminLogin() {
 
       Swal.close();
 
-      const roles = Array.isArray(res.data.roles) ? res.data.roles : [];
+      // Normalizar rol (el backend devuelve "roles" como array)
+      const roles = res.data.roles || (res.data.rol ? [res.data.rol] : []);
+      const rol =
+        roles.includes("ADMINISTRADOR") ? "ADMINISTRADOR" :
+        roles.includes("SUBADMINISTRADOR") ? "SUBADMINISTRADOR" :
+        "";
 
-      // ? Guardar datos correctamente
+      // Guardar datos correctamente
       localStorage.setItem("usuario", JSON.stringify(res.data.usuario));
-      localStorage.setItem("roles", JSON.stringify(roles));
+      localStorage.setItem("rol", rol);
       localStorage.setItem("token", res.data.token);
 
-      // ? Configurar axios para futuras peticiones protegidas
+      // Configurar axios para futuras peticiones protegidas
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${res.data.token}`;
 
       Swal.fire({
         icon: "success",
         title: "Bienvenido",
-        text: `${res.data.usuario.correo} (${roles.join(", ")})`
+        text: `${res.data.usuario.correo} (${rol || "SIN_ROL"})`
       });
 
-      // ? Redireccion CORRECTA segun roles reales de la BD
-      if (roles.includes("ADMINISTRADOR")) {
-        window.location.href = "/admin";
-        return;
-      }
+      // Redirección CORRECTA según rol real de la BD
+      switch (rol) {
+        case "ADMINISTRADOR":
+          window.location.href = "/admin";
+          break;
 
-      if (roles.includes("SUBADMINISTRADOR")) {
-        window.location.href = "/subadmin";
-        return;
-      }
+        case "SUBADMINISTRADOR":
+          window.location.href = "/subadmin";
+          break;
 
-      Swal.fire("Error", "Rol no autorizado", "error");
+        default:
+          Swal.fire("Error", "Rol no autorizado", "error");
+          break;
+      }
 
     } catch (err) {
       Swal.close();
@@ -94,7 +103,7 @@ export default function AdminLogin() {
           <input
             type="password"
             className="form-control mb-3"
-            placeholder="Contrasena"
+            placeholder="Contraseña"
             value={contrasena}
             onChange={(e) => setContrasena(e.target.value)}
             required
@@ -103,6 +112,11 @@ export default function AdminLogin() {
           <button className="btn btn-danger w-100" type="submit">
             Ingresar
           </button>
+          <div className="text-center mt-3">
+            <Link to="/request-password-reset" className="small text-muted">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </form>
       </div>
     </div>

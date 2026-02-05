@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
-// 1. Agregamos 'Link' a la importacion
-import { useNavigate, Link } from "react-router-dom"; 
+// 1. Agregamos 'Link' a la importación
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import AuthContext from "../context/AuthContext";
@@ -30,11 +30,10 @@ export default function Login() {
 
       Swal.close();
 
-      const { token, roles, entidad } = data;
-      const rolesList = Array.isArray(roles) ? roles : [];
+      const { token, rol, entidad } = data;
 
-      // ? Bloquear administradores
-      if (rolesList.includes("ADMINISTRADOR") || rolesList.includes("SUBADMINISTRADOR")) {
+      // Bloquear administradores
+      if (rol === "ADMINISTRADOR" || rol === "SUBADMINISTRADOR") {
         await Swal.fire({
           icon: "warning",
           title: "Acceso no permitido",
@@ -43,39 +42,37 @@ export default function Login() {
         return;
       }
 
-      // ? Guardar sesion
+      // Guardar sesión
       login({
         token,
-        roles: rolesList,
-        entidad,
+        rol,
+        usuario: entidad,
       });
 
       await Swal.fire({
         icon: "success",
         title: "Bienvenido",
-        text: `Roles detectados: ${rolesList.join(", ")}`,
+        text: `Rol detectado correctamente: ${rol}`,
       });
 
-      const ruta = rolesList.includes("CLUB")
-        ? "/club"
-        : rolesList.includes("COMPETIDOR")
-        ? "/competidor"
-        : rolesList.includes("JUEZ")
-        ? "/juez"
-        : "/";
+      const rutasPorRol = {
+        CLUB: "/club",
+        COMPETIDOR: "/competidor",
+        JUEZ: "/juez",
+        CLUB_COMPETIDOR: "/club",
+      };
 
-      navigate(ruta);
+      navigate(rutasPorRol[rol] || "/");
 
     } catch (error) {
       Swal.close();
-      const data = error?.response?.data;
-      const mensaje = typeof data === "string"
-          ? data
-          : data?.message || data?.mensaje || "Correo o contrasena incorrectos";
+      const mensaje = typeof error?.response?.data === "string"
+          ? error.response.data
+          : "Correo o contraseña incorrectos";
 
       Swal.fire({
         icon: "error",
-        title: "Error al iniciar sesion",
+        title: "Error al iniciar sesión",
         text: mensaje,
       });
     }
@@ -106,7 +103,7 @@ export default function Login() {
 
           <div className="col-md-5">
             <h3 className="fw-bold text-primary mb-4">
-              Iniciar sesion
+              Iniciar sesión
             </h3>
 
             <form onSubmit={handleSubmit}>
@@ -125,7 +122,7 @@ export default function Login() {
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="Contrasena"
+                  placeholder="Contraseña"
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
                   required
@@ -140,14 +137,14 @@ export default function Login() {
               </button>
 
               <div className="text-center">
-                <a href="#" className="small text-muted d-block mb-2">
-                  ?Olvidaste tu contrasena?
-                </a>
+                <Link to="/request-password-reset" className="small text-muted d-block mb-2">
+                  ¿Olvidaste tu contraseña?
+                </Link>
                 <p className="small mb-0">
-                  ?No tienes cuenta?{" "}
-                  {/* 2. Aqui cambiamos el <a> por <Link> */}
+                  ¿No tienes cuenta?{" "}
+                  {/* 2. Aquí cambiamos el <a> por <Link> */}
                   <Link to="/register" className="text-primary fw-bold">
-                    Registrate
+                    Regístrate
                   </Link>
                 </p>
               </div>
