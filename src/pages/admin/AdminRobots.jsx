@@ -11,6 +11,9 @@ export default function AdminRobots() {
   const [robots, setRobots] = useState([]);
   const [clubes, setClubes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRobots, setTotalRobots] = useState(0);
 
   // Filtros locales (Estado del formulario)
   const [filtros, setFiltros] = useState({
@@ -36,15 +39,21 @@ export default function AdminRobots() {
     setLoading(true);
     try {
       // El backend recibe los filtros y devuelve la lista ya procesada
-      const data = await listarRobotsAdmin(params);
-      setRobots(data || []);
+      const data = await listarRobotsAdmin({
+        ...params,
+        page: page - 1,
+        size: 20
+      });
+      setRobots(Array.isArray(data?.content) ? data.content : []);
+      setTotalPages(data?.totalPages ?? 1);
+      setTotalRobots(data?.totalElements ?? 0);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "No se pudieron cargar los robots desde el servidor", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   // 1. Cargar lista de clubes (Select) al montar
   useEffect(() => {
@@ -61,6 +70,14 @@ export default function AdminRobots() {
     }, 500);
     return () => clearTimeout(timer);
   }, [filtrosNormalizados, cargarRobots]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filtrosNormalizados]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =========================
   // HANDLERS
@@ -238,10 +255,32 @@ export default function AdminRobots() {
         </div>
         <div className="card-footer bg-white border-top-0 py-3">
           <small className="text-muted">
-             {loading ? "Cargando..." : `Mostrando ${robots.length} resultados`}
+             {loading ? "Cargando..." : `Mostrando ${robots.length} de ${totalRobots} resultados`}
           </small>
         </div>
       </div>
+
+      {!loading && totalRobots > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            PÃ¡gina {page} de {totalPages}
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>
+              Primero
+            </button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>
+              Anterior
+            </button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+              Siguiente
+            </button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>
+              Ãšltimo
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

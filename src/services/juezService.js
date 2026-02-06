@@ -64,5 +64,6 @@ export const rechazarJuez = async (idJuez) => {
 
 // 3. LISTAR
 export const listarJueces = async () => {
-  return api.get("/admin/jueces");
+  const res = await api.get("/admin/jueces", { params: { page: 0, size: 1000 } });
+  return res.data?.content || res.data;
 };

@@ -11,6 +11,9 @@ export default function SubAdministradores() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalSubadmins, setTotalSubadmins] = useState(0);
 
   const initialForm = {
     dni: "",
@@ -32,8 +35,15 @@ export default function SubAdministradores() {
   const cargarSubadmins = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/subadmins");
-      setSubadmins(res.data || []);
+      const res = await api.get("/admin/subadmins", {
+        params: {
+          page: page - 1,
+          size: 20
+        }
+      });
+      setSubadmins(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalSubadmins(res.data?.totalElements ?? 0);
     } catch {
       Swal.fire("Error", "No se pudo cargar subadministradores", "error");
     } finally {
@@ -45,7 +55,11 @@ export default function SubAdministradores() {
 
   useEffect(() => {
     cargarSubadmins();
-  }, []);
+  }, [page]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   const cargarPorDni = async () => {
     try {
@@ -209,6 +223,21 @@ export default function SubAdministradores() {
           ))}
         </tbody>
       </table>
+
+      {!loading && totalSubadmins > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {subadmins.length} de {totalSubadmins} subadmins
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <span className="btn btn-light btn-sm disabled">Página {page} de {totalPages}</span>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Último</button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL */}
       {modalOpen && (

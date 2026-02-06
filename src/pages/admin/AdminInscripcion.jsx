@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { FaSearch, FaBan, FaRobot, FaTrophy, FaListAlt, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import api from "../../services/axiosConfig"; // Asegúrate de que apunte a tu configuración
@@ -11,6 +11,9 @@ export default function AdminInscripcion() {
   const [inscripciones, setInscripciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalInscripciones, setTotalInscripciones] = useState(0);
 
   // =========================
   // CARGAR DATOS
@@ -18,8 +21,16 @@ export default function AdminInscripcion() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/inscripciones");
-      setInscripciones(res.data || []);
+      const res = await api.get("/admin/inscripciones", {
+        params: {
+          page: page - 1,
+          size: 20,
+          q: busqueda?.trim() || undefined
+        }
+      });
+      setInscripciones(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalInscripciones(res.data?.totalElements ?? 0);
     } catch (err) {
       console.error("Error cargando inscripciones", err);
       Swal.fire("Error", "No se pudieron cargar las inscripciones desde el servidor", "error");
@@ -30,22 +41,15 @@ export default function AdminInscripcion() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [page, busqueda]);
 
-  // =========================
-  // LÓGICA DE FILTRADO (VISUAL)
-  // =========================
-  const inscripcionesFiltradas = useMemo(() => {
-    return inscripciones.filter((i) => {
-      const termino = busqueda.toLowerCase();
-      // Filtrar por Torneo, Categoría o nombre de algún Robot
-      return (
-        i.torneo?.toLowerCase().includes(termino) ||
-        i.categoria?.toLowerCase().includes(termino) ||
-        i.robots?.some(r => r.toLowerCase().includes(termino))
-      );
-    });
-  }, [inscripciones, busqueda]);
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =========================
   // ACCIONES (LÓGICA DELEGADA AL BACKEND)
@@ -131,16 +135,16 @@ export default function AdminInscripcion() {
                 </thead>
 
                 <tbody>
-                  {inscripcionesFiltradas.length === 0 ? (
+                  {inscripciones.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="text-center py-5 text-muted">
                         No se encontraron inscripciones.
                       </td>
                     </tr>
                   ) : (
-                    inscripcionesFiltradas.map((i, index) => (
+                    inscripciones.map((i, index) => (
                       <tr key={i.idInscripcion}>
-                        <td className="ps-4 fw-bold text-muted">{index + 1}</td>
+                        <td className="ps-4 fw-bold text-muted">{index + 1 + (page - 1) * 20}</td>
                         
                         <td className="fw-semibold">{i.torneo}</td>
                         
@@ -194,8 +198,22 @@ export default function AdminInscripcion() {
           {/* Footer de la tabla con contador */}
           <div className="card-footer bg-white border-top-0 py-3">
             <small className="text-muted">
-              Mostrando {inscripcionesFiltradas.length} de {inscripciones.length} registros
+              Mostrando {inscripciones.length} de {totalInscripciones} registros
             </small>
+          </div>
+        </div>
+      )}
+
+      {!loading && totalInscripciones > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Página {page} de {totalPages}
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Último</button>
           </div>
         </div>
       )}

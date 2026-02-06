@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaCheck, FaTimes, FaUserTie, FaEnvelope, FaPhone, FaIdCard, FaBan } from "react-icons/fa";
 import api from "../../services/axiosConfig";
@@ -11,6 +11,9 @@ export default function AdminJueces() {
   const [jueces, setJueces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJueces, setTotalJueces] = useState(0);
   const [modal, setModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   
@@ -68,31 +71,33 @@ export default function AdminJueces() {
   const cargar = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/jueces");
-      setJueces(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get("/admin/jueces", {
+        params: {
+          page: page - 1,
+          size: 20,
+          q: searchTerm?.trim() || undefined
+        }
+      });
+      setJueces(Array.isArray(res.data?.content) ? res.data.content : []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalJueces(res.data?.totalElements ?? 0);
     } catch (err) {
       console.error("Error al cargar jueces:", err);
       Swal.fire("Error", "No se pudo sincronizar la lista de jueces", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, searchTerm]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  // =========================
-  // FILTRADO (VISUAL)
-  // =========================
-  const juecesFiltrados = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return jueces.filter((j) => 
-      (j.usuario?.dni?.toLowerCase() || "").includes(term) ||
-      (j.usuario?.nombres?.toLowerCase() || "").includes(term) ||
-      (j.usuario?.apellidos?.toLowerCase() || "").includes(term) ||
-      (j.usuario?.correo?.toLowerCase() || "").includes(term) ||
-      (j.licencia?.toLowerCase() || "").includes(term)
-    );
-  }, [jueces, searchTerm]);
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =========================
   // MANEJO DEL FORMULARIO
@@ -252,11 +257,11 @@ export default function AdminJueces() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="5" className="text-center py-5"><div className="spinner-border text-primary" role="status"></div></td></tr>
-              ) : juecesFiltrados.length === 0 ? (
-                <tr><td colSpan="5" className="text-center text-muted py-5">No se encontraron jueces con los criterios de búsqueda</td></tr>
+                <tr><td colSpan="6" className="text-center py-5"><div className="spinner-border text-primary" role="status"></div></td></tr>
+              ) : jueces.length === 0 ? (
+                <tr><td colSpan="6" className="text-center text-muted py-5">No se encontraron jueces con los criterios de búsqueda</td></tr>
               ) : (
-                juecesFiltrados.map(j => (
+                jueces.map(j => (
                   <tr key={j.idJuez}>
                     <td className="ps-4">
                       <div className="d-flex align-items-center">
@@ -311,6 +316,21 @@ export default function AdminJueces() {
           </table>
         </div>
       </div>
+
+      {!loading && totalJueces > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {jueces.length} de {totalJueces} jueces
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <span className="btn btn-light btn-sm disabled">Página {page} de {totalPages}</span>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Último</button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL CREAR / EDITAR */}
       {modal && (

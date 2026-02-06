@@ -1,8 +1,8 @@
 import api from "./axiosConfig";
 
 export const listarCategoriasEncuentros = async () => {
-  const res = await api.get("/admin/encuentros/categorias");
-  return res.data;
+  const res = await api.get("/admin/encuentros/categorias", { params: { page: 0, size: 1000 } });
+  return res.data?.content || res.data;
 };
 
 export const generarEncuentros = async (data) => {

@@ -35,7 +35,7 @@ api.interceptors.response.use(
 
         localStorage.removeItem("usuario");
         localStorage.removeItem("token");
-        localStorage.removeItem("rol");
+        localStorage.removeItem("roles");
         localStorage.removeItem("entidad");
 
         return Swal.fire("Acceso denegado", msg, "error").then(() => {

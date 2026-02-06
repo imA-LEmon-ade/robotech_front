@@ -34,13 +34,13 @@ export default function AdminGenerarEncuentros() {
       try {
         // Carga paralela de listas auxiliares
         const [resJueces, resColiseos, resCategorias] = await Promise.all([
-          api.get("/admin/jueces"),
-          api.get("/admin/coliseos"),
-          api.get("/admin/encuentros/categorias")
+          api.get("/admin/jueces/select"),
+          api.get("/admin/coliseos", { params: { page: 0, size: 1000 } }),
+          api.get("/admin/encuentros/categorias", { params: { page: 0, size: 1000 } })
         ]);
         setJueces(resJueces.data || []);
-        setColiseos(resColiseos.data || []);
-        const categorias = Array.isArray(resCategorias.data) ? resCategorias.data : [];
+        setColiseos(resColiseos.data?.content || resColiseos.data || []);
+        const categorias = resCategorias.data?.content || [];
         const cat = categorias.find(c => c.idCategoriaTorneo === idCategoriaTorneo) || null;
         setCategoriaInfo(cat);
         setHasEncuentros(!!cat?.hasEncuentros);

@@ -11,6 +11,9 @@ export default function Clubes() {
   const [busqueda, setBusqueda] = useState("");
   const [clubes, setClubes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalClubes, setTotalClubes] = useState(0);
   
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
@@ -46,16 +49,32 @@ export default function Clubes() {
   const cargarClubes = useCallback(async (termino = "") => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/clubes", { params: { nombre: termino } });
-      setClubes(res.data || []);
+      const res = await api.get("/admin/clubes", {
+        params: {
+          nombre: termino,
+          page: page - 1,
+          size: 20
+        }
+      });
+      setClubes(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalClubes(res.data?.totalElements ?? 0);
     } catch { Swal.fire("Error", "No se pudo cargar la lista", "error"); }
     finally { setLoading(false); }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     const timer = setTimeout(() => cargarClubes(busqueda), 500);
     return () => clearTimeout(timer);
   }, [busqueda, cargarClubes]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   const registrarClub = async () => {
     try {
@@ -212,6 +231,21 @@ export default function Clubes() {
           </div>
         </div>
       </div>
+
+      {!loading && totalClubes > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {clubes.length} de {totalClubes} clubes
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <span className="btn btn-light btn-sm disabled">PÃ¡gina {page} de {totalPages}</span>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Ãšltimo</button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL CREAR */}
       {modalOpen && (

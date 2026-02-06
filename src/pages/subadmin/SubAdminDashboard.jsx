@@ -34,7 +34,10 @@ export default function SubAdminDashboard() {
       const safeGet = async (url) => {
         try {
           const res = await api.get(url);
-          return Array.isArray(res.data) ? res.data.length : 0;
+          if (Array.isArray(res.data)) return res.data.length;
+          if (typeof res.data?.totalElements === "number") return res.data.totalElements;
+          if (Array.isArray(res.data?.content)) return res.data.content.length;
+          return 0;
         } catch (err) {
           console.warn(`No se pudo obtener datos de ${url}:`, err.response?.status || err.message);
           return 0; 

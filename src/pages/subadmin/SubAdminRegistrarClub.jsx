@@ -28,8 +28,8 @@ export default function SubAdminRegistrarClub() {
   const cargarClubes = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/clubes");
-      setClubes(res.data || []);
+      const res = await api.get("/admin/clubes", { params: { page: 0, size: 1000 } });
+      setClubes(res.data?.content || res.data || []);
     } catch (err) {
       Swal.fire("Error", "No se pudo cargar la lista", "error");
     } finally {

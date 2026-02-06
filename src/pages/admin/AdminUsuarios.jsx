@@ -18,6 +18,9 @@ export default function AdminUsuarios() {
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
   const [currentPass, setCurrentPass] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsuarios, setTotalUsuarios] = useState(0);
 
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
@@ -75,12 +78,25 @@ export default function AdminUsuarios() {
   // ============================
   // CARGA DE DATOS
   // ============================
+  const PAGE_SIZE = 20;
+
   const cargar = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/usuarios");
-      // Aseguramos que sea un array para evitar errores de map
-      setUsuarios(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get("/admin/usuarios", {
+        params: {
+          page: page - 1,
+          size: PAGE_SIZE,
+          q: busqueda?.trim() || undefined
+        }
+      });
+
+      const data = res.data || {};
+      const content = Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []);
+
+      setUsuarios(content);
+      setTotalPages(data.totalPages ?? 1);
+      setTotalUsuarios(data.totalElements ?? content.length);
     } catch (err) {
       Swal.fire("Error", err.response?.data?.message || "No se pudo cargar la lista de usuarios", "error");
     } finally {
@@ -90,21 +106,15 @@ export default function AdminUsuarios() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [page, busqueda]);
 
-  // ============================
-  // FILTRADO (SOLO VISUAL EN FRONTEND)
-  // ============================
-  const usuariosFiltrados = useMemo(() => {
-    const term = busqueda.toLowerCase();
-    return usuarios.filter(u => 
-      (u.dni?.toLowerCase() || "").includes(term) ||
-      (u.nombres?.toLowerCase() || "").includes(term) ||
-      (u.apellidos?.toLowerCase() || "").includes(term) ||
-      (u.correo?.toLowerCase() || "").includes(term) ||
-      ((u.roles || []).join(' ').toLowerCase()).includes(term)
-    );
-  }, [usuarios, busqueda]);
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // ============================
   // GESTIÓN DE FORMULARIO
@@ -171,7 +181,7 @@ export default function AdminUsuarios() {
       [field]: value
     }));
 
-    const error = validarCampo(field, value);
+    let error = validarCampo(field, value);
 
     if (field === "contrasena") {
       if (!value) {
@@ -410,11 +420,11 @@ export default function AdminUsuarios() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" className="text-center py-5"><div className="spinner-border text-primary"/></td></tr>
-                ) : usuariosFiltrados.length === 0 ? (
-                  <tr><td colSpan="5" className="text-center py-5 text-muted">No se encontraron usuarios.</td></tr>
+                  <tr><td colSpan="6" className="text-center py-5"><div className="spinner-border text-primary"/></td></tr>
+                ) : usuarios.length === 0 ? (
+                  <tr><td colSpan="6" className="text-center py-5 text-muted">No se encontraron usuarios.</td></tr>
                 ) : (
-                  usuariosFiltrados.map((u) => (
+                  usuarios.map((u) => (
                     <tr key={u.idUsuario}>
                       {/* COLUMNA USUARIO */}
                       <td className="ps-4">
@@ -491,6 +501,47 @@ export default function AdminUsuarios() {
           </div>
         </div>
       </div>
+
+      {!loading && totalUsuarios > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {usuarios.length} de {totalUsuarios} usuarios
+          </div>
+          <div className="btn-group">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setPage(1)}
+              disabled={page <= 1}
+            >
+              Primero
+            </button>
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              Anterior
+            </button>
+            <span className="btn btn-light btn-sm disabled">
+              PÃ¡gina {page} de {totalPages}
+            </span>
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              Siguiente
+            </button>
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setPage(totalPages)}
+              disabled={page >= totalPages}
+            >
+              Ãšltimo
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* --- MODAL CREAR / EDITAR --- */}
       {modal && (

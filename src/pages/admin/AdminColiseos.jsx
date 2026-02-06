@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaMapMarkerAlt, FaImage, FaLandmark } from "react-icons/fa";
 import api from "../../services/axiosConfig"; // Asegúrate de que apunte a tu config
@@ -10,6 +10,9 @@ export default function AdminColiseos() {
   const [coliseos, setColiseos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalColiseos, setTotalColiseos] = useState(0);
 
   // Modal & Form
   const [modal, setModal] = useState(false);
@@ -26,8 +29,16 @@ export default function AdminColiseos() {
   const cargar = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/coliseos");
-      setColiseos(res.data || []);
+      const res = await api.get("/admin/coliseos", {
+        params: {
+          page: page - 1,
+          size: 20,
+          q: busqueda?.trim() || undefined
+        }
+      });
+      setColiseos(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalColiseos(res.data?.totalElements ?? 0);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "No se pudo conectar con el servidor", "error");
@@ -38,17 +49,15 @@ export default function AdminColiseos() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [page, busqueda]);
 
-  // =========================
-  // FILTRADO (VISUAL)
-  // =========================
-  const coliseosFiltrados = useMemo(() => {
-    return coliseos.filter(c => 
-      (c.nombre?.toLowerCase() || "").includes(busqueda.toLowerCase()) ||
-      (c.ubicacion?.toLowerCase() || "").includes(busqueda.toLowerCase())
-    );
-  }, [coliseos, busqueda]);
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =========================
   // MANEJO DEL MODAL
@@ -195,7 +204,7 @@ export default function AdminColiseos() {
               <tbody>
                 {loading ? (
                   <tr><td colSpan="4" className="text-center py-5"><div className="spinner-border text-primary"/></td></tr>
-                ) : coliseosFiltrados.length === 0 ? (
+                ) : coliseos.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="text-center py-5">
                       <div className="text-muted opacity-50 mb-2"><FaLandmark size={40}/></div>
@@ -204,7 +213,7 @@ export default function AdminColiseos() {
                     </td>
                   </tr>
                 ) : (
-                  coliseosFiltrados.map(c => (
+                  coliseos.map(c => (
                     <tr key={c.idColiseo}>
                       <td className="ps-4" style={{width: "100px"}}>
                         <div style={{width: "60px", height: "60px", overflow: "hidden", borderRadius: "8px"}} className="bg-light border d-flex align-items-center justify-content-center">
@@ -242,9 +251,23 @@ export default function AdminColiseos() {
           </div>
         </div>
         <div className="card-footer bg-white border-top-0 py-3">
-          <small className="text-muted">Mostrando {coliseosFiltrados.length} resultados</small>
+          <small className="text-muted">Mostrando {coliseos.length} de {totalColiseos} resultados</small>
         </div>
       </div>
+
+      {!loading && totalColiseos > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Página {page} de {totalPages}
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Último</button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL */}
       {modal && (

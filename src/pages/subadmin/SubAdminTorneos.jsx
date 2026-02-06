@@ -63,8 +63,8 @@ export default function SubAdminTorneos() {
   const cargar = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/admin/torneos");
-      setTorneos(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get("/admin/torneos", { params: { page: 0, size: 1000 } });
+      setTorneos(Array.isArray(res.data?.content) ? res.data.content : (Array.isArray(res.data) ? res.data : []));
     } catch (err) {
       Swal.fire("Error", "Error de conexión", "error");
     } finally {

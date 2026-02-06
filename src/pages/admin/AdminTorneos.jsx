@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { FaTrophy, FaCalendarAlt, FaEdit, FaTrash, FaListUl, FaSearch, FaPlus, FaSave, FaTimes } from "react-icons/fa";
@@ -13,6 +13,9 @@ export default function AdminTorneos() {
   const [torneos, setTorneos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTorneos, setTotalTorneos] = useState(0);
   
   // Modal & Edición
   const [modal, setModal] = useState(false);
@@ -55,8 +58,16 @@ export default function AdminTorneos() {
   const cargar = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/admin/torneos");
-      setTorneos(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get("/admin/torneos", {
+        params: {
+          page: page - 1,
+          size: 20,
+          q: busqueda?.trim() || undefined
+        }
+      });
+      setTorneos(Array.isArray(res.data?.content) ? res.data.content : []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalTorneos(res.data?.totalElements ?? 0);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "No se pudo conectar con el servidor", "error");
@@ -67,16 +78,15 @@ export default function AdminTorneos() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [page, busqueda]);
 
-  // =============================
-  // FILTRADO (VISUAL)
-  // =============================
-  const torneosFiltrados = useMemo(() => {
-    return torneos.filter(t => 
-      t.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
-  }, [torneos, busqueda]);
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =============================
   // ACCIONES (LOGIC DELEGATED TO BACKEND)
@@ -222,10 +232,10 @@ export default function AdminTorneos() {
               <tbody>
                 {loading ? (
                    <tr><td colSpan="5" className="text-center py-5"><div className="spinner-border text-primary"/></td></tr>
-                ) : torneosFiltrados.length === 0 ? (
+                ) : torneos.length === 0 ? (
                    <tr><td colSpan="5" className="text-center py-5 text-muted">No se encontraron torneos.</td></tr>
                 ) : (
-                  torneosFiltrados.map(t => (
+                  torneos.map(t => (
                     <tr key={t.idTorneo}>
                       <td className="ps-4">
                         <div className="fw-bold text-dark">{t.nombre}</div>
@@ -303,6 +313,21 @@ export default function AdminTorneos() {
           </div>
         </div>
       </div>
+
+      {!loading && totalTorneos > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {torneos.length} de {totalTorneos} torneos
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <span className="btn btn-light btn-sm disabled">PÃ¡gina {page} de {totalPages}</span>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Ãšltimo</button>
+          </div>
+        </div>
+      )}
 
       {/* ================= MODAL ================= */}
       {modal && (

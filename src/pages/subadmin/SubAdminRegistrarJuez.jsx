@@ -46,8 +46,8 @@ export default function SubAdminRegistrarJuez() {
   const cargarDatos = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/jueces");
-      setJueces(Array.isArray(res.data) ? res.data : []);
+      const res = await api.get("/admin/jueces", { params: { page: 0, size: 1000 } });
+      setJueces(Array.isArray(res.data?.content) ? res.data.content : (Array.isArray(res.data) ? res.data : []));
     } catch (err) {
       Swal.fire("Error", "No se pudo sincronizar la lista de jueces", "error");
     } finally {

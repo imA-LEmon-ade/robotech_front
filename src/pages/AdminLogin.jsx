@@ -1,12 +1,14 @@
-import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+import api from "../services/axiosConfig";
+import AuthContext from "../context/AuthContext";
 
 export default function AdminLogin() {
 
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
+  const { login } = useContext(AuthContext);
 
   // ... (ingresar function remains the same) ...
   const ingresar = async (e) => {
@@ -19,31 +21,21 @@ export default function AdminLogin() {
     });
 
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/admin/login",
-        {
-          correo,
-          contrasena
-        }
-      );
+      const res = await api.post("/admin/login", { correo, contrasena });
 
       Swal.close();
 
       // Normalizar rol (el backend devuelve "roles" como array)
-      const roles = res.data.roles || (res.data.rol ? [res.data.rol] : []);
+      const roles = Array.isArray(res.data.roles)
+        ? res.data.roles
+        : (res.data.rol ? [res.data.rol] : []);
       const rol =
         roles.includes("ADMINISTRADOR") ? "ADMINISTRADOR" :
         roles.includes("SUBADMINISTRADOR") ? "SUBADMINISTRADOR" :
         "";
 
-      // Guardar datos correctamente
-      localStorage.setItem("usuario", JSON.stringify(res.data.usuario));
-      localStorage.setItem("rol", rol);
-      localStorage.setItem("token", res.data.token);
-
-      // Configurar axios para futuras peticiones protegidas
-      axios.defaults.headers.common["Authorization"] =
-        `Bearer ${res.data.token}`;
+      // Centralizar manejo de sesiÃ³n en el AuthProvider
+      login(res.data);
 
       Swal.fire({
         icon: "success",

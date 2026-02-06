@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import api from "../../services/axiosConfig";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,9 @@ export default function AdminEncuentros() {
   // =========================
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCategorias, setTotalCategorias] = useState(0);
   
   // Filtros locales
   const [busqueda, setBusqueda] = useState("");
@@ -23,8 +26,17 @@ export default function AdminEncuentros() {
   const cargarCategorias = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/admin/encuentros/categorias");
-      setCategorias(res.data || []);
+      const res = await api.get("/admin/encuentros/categorias", {
+        params: {
+          page: page - 1,
+          size: 20,
+          q: busqueda?.trim() || undefined,
+          estado: filtroEstado
+        }
+      });
+      setCategorias(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 1);
+      setTotalCategorias(res.data?.totalElements ?? 0);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "No se pudieron cargar las categorías desde el servidor", "error");
@@ -35,26 +47,15 @@ export default function AdminEncuentros() {
 
   useEffect(() => {
     cargarCategorias();
-  }, []);
+  }, [page, busqueda, filtroEstado]);
 
-  // =========================
-  // LÓGICA DE FILTRADO (VISUAL)
-  // =========================
-  const categoriasFiltradas = useMemo(() => {
-    return categorias.filter(cat => {
-      // 1. Filtro por Texto (Torneo o Categoría)
-      const textoMatch = 
-        (cat.torneo?.toLowerCase() || "").includes(busqueda.toLowerCase()) || 
-        (cat.categoria?.toLowerCase() || "").includes(busqueda.toLowerCase());
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda, filtroEstado]);
 
-      // 2. Filtro por Estado (Pestañas)
-      let estadoMatch = true;
-      if (filtroEstado === "CERRADAS") estadoMatch = cat.inscripcionesCerradas;
-      if (filtroEstado === "ABIERTAS") estadoMatch = !cat.inscripcionesCerradas;
-
-      return textoMatch && estadoMatch;
-    });
-  }, [categorias, busqueda, filtroEstado]);
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages || 1);
+  }, [page, totalPages]);
 
   // =========================
   // RENDER
@@ -121,7 +122,7 @@ export default function AdminEncuentros() {
            <div className="spinner-border text-primary" role="status"></div>
            <p className="mt-2 text-muted">Cargando categorías...</p>
         </div>
-      ) : categoriasFiltradas.length === 0 ? (
+      ) : categorias.length === 0 ? (
         <div className="text-center py-5">
            <div className="display-1 text-muted opacity-25 mb-3"><FaTrophy/></div>
            <h5 className="text-muted">No se encontraron categorías</h5>
@@ -129,7 +130,7 @@ export default function AdminEncuentros() {
         </div>
       ) : (
         <div className="row g-4">
-          {categoriasFiltradas.map(cat => (
+          {categorias.map(cat => (
             <div key={cat.idCategoriaTorneo} className="col-md-6 col-lg-4 col-xl-3">
               <div className={`card h-100 shadow-sm hover-effect border border-2 ${cat.hasEncuentros ? "border-success" : "border-danger"}`}>
                 
@@ -186,6 +187,21 @@ export default function AdminEncuentros() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && totalCategorias > 0 && (
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 gap-2">
+          <div className="text-muted small">
+            Mostrando {categorias.length} de {totalCategorias} categorías
+          </div>
+          <div className="btn-group">
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(1)} disabled={page <= 1}>Primero</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}>Anterior</button>
+            <span className="btn btn-light btn-sm disabled">Página {page} de {totalPages}</span>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>Siguiente</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setPage(totalPages)} disabled={page >= totalPages}>Último</button>
+          </div>
         </div>
       )}
 
