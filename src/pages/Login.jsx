@@ -79,9 +79,19 @@ export default function Login() {
 
     } catch (error) {
       Swal.close();
-      const mensaje = typeof error?.response?.data === "string"
-          ? error.response.data
-          : "Correo o contraseña incorrectos";
+      const data = error?.response?.data;
+      const mensaje =
+        typeof data === "string"
+          ? data
+          : data?.message ||
+            data?.mensaje ||
+            data?.error ||
+            data?.detail ||
+            data?.errors?.[0]?.message ||
+            data?.errors?.[0] ||
+            data?.error?.message ||
+            (typeof data === "object" ? JSON.stringify(data) : null) ||
+            "Correo o contraseña incorrectos";
 
       Swal.fire({
         icon: "error",
