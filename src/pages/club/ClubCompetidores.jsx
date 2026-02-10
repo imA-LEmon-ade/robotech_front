@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useContext } from "react";
 import Swal from "sweetalert2";
-import { FaUserCheck, FaUserTimes, FaSearch, FaUsers, FaIdCard, FaSpinner } from "react-icons/fa";
+import { FaUserCheck, FaUserTimes, FaSearch, FaUsers, FaIdCard, FaSpinner, FaEdit, FaUserSlash, FaEnvelope, FaPhone } from "react-icons/fa";
 import api from "../../services/axiosConfig";
 import AuthContext from "../../context/AuthContext";
 
@@ -9,6 +9,8 @@ export default function ClubCompetidores() {
   const [lista, setLista] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(false);
+  const [modalEdit, setModalEdit] = useState(false);
+  const [editando, setEditando] = useState(null);
 
   const idClub = user?.idClub;
 
@@ -77,6 +79,60 @@ export default function ClubCompetidores() {
     } catch (error) {
       // Mostrar el error exacto que devuelve el backend (ej: "Documentación incompleta")
       const msg = error.response?.data?.mensaje || "No se pudo procesar la solicitud";
+      Swal.fire("Error", msg, "error");
+    }
+  };
+
+  const abrirEditar = (c) => {
+    setEditando({
+      idCompetidor: c.idCompetidor,
+      nombres: c.nombres || "",
+      apellidos: c.apellidos || "",
+      dni: c.dni || "",
+      correo: c.correo || "",
+      telefono: c.telefono || ""
+    });
+    setModalEdit(true);
+  };
+
+  const guardarEdicion = async () => {
+    if (!editando) return;
+    try {
+      await api.put(`/competidores/${editando.idCompetidor}`, {
+        nombres: editando.nombres,
+        apellidos: editando.apellidos,
+        dni: editando.dni,
+        correo: editando.correo,
+        telefono: editando.telefono
+      });
+      Swal.fire("Actualizado", "Competidor actualizado correctamente", "success");
+      setModalEdit(false);
+      setEditando(null);
+      cargar(busqueda);
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || "No se pudo actualizar el competidor";
+      Swal.fire("Error", msg, "error");
+    }
+  };
+
+  const inactivarCompetidor = async (c) => {
+    const result = await Swal.fire({
+      title: "¿Inactivar competidor?",
+      text: "El competidor no podrá iniciar sesión.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Sí, inactivar",
+      cancelButtonText: "Cancelar"
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await api.put(`/competidores/${c.idCompetidor}/inactivar`);
+      Swal.fire("Procesado", "Competidor inactivado", "success");
+      cargar(busqueda);
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || "No se pudo inactivar el competidor";
       Swal.fire("Error", msg, "error");
     }
   };
@@ -165,21 +221,47 @@ export default function ClubCompetidores() {
                           </span>
                         </td>
 
-                        <td>
-                          <span className={`badge rounded-pill px-3 py-2 ${
-                            c.estadoValidacion === "VALIDADO" || c.estadoValidacion === "APROBADO" 
-                              ? "bg-success-subtle text-success border border-success" 
-                              : c.estadoValidacion === "RECHAZADO" 
-                                ? "bg-danger-subtle text-danger border border-danger" 
-                                : "bg-warning-subtle text-warning-emphasis border border-warning"
-                          }`}>
-                            {c.estadoValidacion}
-                          </span>
-                        </td>
+                    <td>
+                      <div className="d-flex flex-column gap-1">
+                        <span className={`badge rounded-pill px-3 py-2 ${
+                          c.estadoValidacion === "VALIDADO" || c.estadoValidacion === "APROBADO" 
+                            ? "bg-success-subtle text-success border border-success" 
+                            : c.estadoValidacion === "RECHAZADO" 
+                              ? "bg-danger-subtle text-danger border border-danger" 
+                              : "bg-warning-subtle text-warning-emphasis border border-warning"
+                        }`}>
+                          {c.estadoValidacion}
+                        </span>
+                        <span className={`badge rounded-pill px-3 py-2 ${
+                          c.estadoUsuario === "INACTIVO"
+                            ? "bg-danger-subtle text-danger border border-danger"
+                            : "bg-success-subtle text-success border border-success"
+                        }`}>
+                          {c.estadoUsuario || "ACTIVO"}
+                        </span>
+                      </div>
+                    </td>
 
                         <td className="text-end pe-4">
-                          {c.estadoValidacion === "PENDIENTE" ? (
-                            <div className="btn-group">
+                          <div className="btn-group">
+                            <button
+                              className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                              title="Editar"
+                              onClick={() => abrirEditar(c)}
+                            >
+                              <FaEdit /> <span className="d-none d-md-inline">Editar</span>
+                            </button>
+                            <button
+                              className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
+                              title="Inactivar"
+                              onClick={() => inactivarCompetidor(c)}
+                              disabled={c.estadoUsuario === "INACTIVO"}
+                            >
+                              <FaUserSlash /> <span className="d-none d-md-inline">Inactivar</span>
+                            </button>
+                          </div>
+                          {c.estadoValidacion === "PENDIENTE" && (
+                            <div className="btn-group ms-2">
                               <button 
                                 className="btn btn-outline-success btn-sm d-flex align-items-center gap-1"
                                 title="Aprobar"
@@ -195,8 +277,6 @@ export default function ClubCompetidores() {
                                 <FaUserTimes /> <span className="d-none d-md-inline">Rechazar</span>
                               </button>
                             </div>
-                          ) : (
-                            <span className="text-muted small fst-italic">Gestionado</span>
                           )}
                         </td>
                       </tr>
@@ -208,6 +288,75 @@ export default function ClubCompetidores() {
           )}
         </div>
       </div>
+
+      {modalEdit && editando && (
+        <>
+          <div className="modal-backdrop fade show"></div>
+          <div className="modal fade show d-block" tabIndex="-1">
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header bg-primary text-white">
+                  <h5 className="modal-title fw-bold"><FaEdit className="me-2"/>Editar Competidor</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => { setModalEdit(false); setEditando(null); }}></button>
+                </div>
+                <div className="modal-body p-4">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label small text-muted fw-bold">Nombres</label>
+                      <input className="form-control" value={editando.nombres} onChange={(e) => setEditando({ ...editando, nombres: e.target.value })} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small text-muted fw-bold">Apellidos</label>
+                      <input className="form-control" value={editando.apellidos} onChange={(e) => setEditando({ ...editando, apellidos: e.target.value })} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small text-muted fw-bold">DNI</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0"><FaIdCard className="text-muted"/></span>
+                        <input
+                          className="form-control"
+                          value={editando.dni}
+                          onChange={(e) => setEditando({ ...editando, dni: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+                          inputMode="numeric"
+                          maxLength={8}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small text-muted fw-bold">Correo</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0"><FaEnvelope className="text-muted"/></span>
+                        <input
+                          className="form-control"
+                          value={editando.correo}
+                          onChange={(e) => setEditando({ ...editando, correo: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small text-muted fw-bold">Teléfono</label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-0"><FaPhone className="text-muted"/></span>
+                        <input
+                          className="form-control"
+                          value={editando.telefono || ""}
+                          onChange={(e) => setEditando({ ...editando, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })}
+                          inputMode="numeric"
+                          maxLength={9}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer bg-light">
+                  <button className="btn btn-secondary" onClick={() => { setModalEdit(false); setEditando(null); }}>Cancelar</button>
+                  <button className="btn btn-primary px-4" onClick={guardarEdicion}>Guardar Cambios</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -46,6 +46,18 @@ export default function Clubes() {
     } catch (err) { Swal.fire("Error", err.message, "error"); }
   };
 
+  const cargarPorDniEdit = async () => {
+    if (!editando?.dniPropietario || editando.dniPropietario.length !== 8) {
+      return Swal.fire("Atención", "Ingresa un DNI de 8 dígitos", "warning");
+    }
+    try {
+      Swal.fire({ title: "Consultando DNI...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const data = await consultarDni(editando.dniPropietario);
+      setEditando(prev => ({ ...prev, nombresPropietario: data.nombres, apellidosPropietario: data.apellidos }));
+      Swal.close();
+    } catch (err) { Swal.fire("Error", err.message, "error"); }
+  };
+
   const cargarClubes = useCallback(async (termino = "") => {
     setLoading(true);
     try {
@@ -329,7 +341,10 @@ export default function Clubes() {
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label className="form-label small text-muted fw-bold">DNI del Propietario</label>
-                      <input className="form-control" value={editando.dniPropietario} onChange={(e) => setEditando({ ...editando, dniPropietario: e.target.value.replace(/\D/g, "").slice(0, 8) })} inputMode="numeric" maxLength={8} />
+                      <div className="input-group">
+                        <input className="form-control" value={editando.dniPropietario} onChange={(e) => setEditando({ ...editando, dniPropietario: e.target.value.replace(/\D/g, "").slice(0, 8) })} inputMode="numeric" maxLength={8} />
+                        <button className="btn btn-outline-info" onClick={cargarPorDniEdit}>Consultar</button>
+                      </div>
                     </div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Nombres</label><input className="form-control" value={editando.nombresPropietario} onChange={(e) => setEditando({ ...editando, nombresPropietario: e.target.value })} /></div>
                     <div className="col-md-6"><label className="form-label small text-muted fw-bold">Apellidos</label><input className="form-control" value={editando.apellidosPropietario} onChange={(e) => setEditando({ ...editando, apellidosPropietario: e.target.value })} /></div>

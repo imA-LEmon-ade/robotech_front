@@ -19,6 +19,7 @@ import EncuentrosPublicos from "./pages/EncuentrosPublicos";
 // ===== ADMIN =====
 import AdminPanel from "./pages/admin/AdminPanel";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
+import AdminCompetidores from "./pages/admin/AdminCompetidores";
 import AdminClubes from "./pages/admin/AdminClubes";
 import AdminColiseos from "./pages/admin/AdminColiseos";
 import AdminJueces from "./pages/admin/AdminJueces";
@@ -104,6 +105,7 @@ function App() {
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="competidores" element={<AdminCompetidores />} />
           <Route path="clubes" element={<AdminClubes />} />
           <Route
             path="transferencias-propietario"

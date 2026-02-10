@@ -6,6 +6,7 @@ export default function AdminPanel() {
 
   const items = [
     { label: "Gestionar Usuarios", to: "usuarios" },
+    { label: "Gestionar Competidores", to: "competidores" },
     { label: "Gestionar Torneos", to: "torneos" },
     { label: "Gestionar Jueces", to: "jueces" },
     { label: "Gestionar Clubes", to: "clubes" },

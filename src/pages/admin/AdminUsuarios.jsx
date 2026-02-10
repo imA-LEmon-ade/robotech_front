@@ -8,6 +8,7 @@ import api from "../../services/axiosConfig"; // Asegúrate de que apunte a tu c
 import { consultarDni } from "../../services/dniService";
 
 const ROLES = ["ADMINISTRADOR", "SUBADMINISTRADOR", "JUEZ", "CLUB", "COMPETIDOR"];
+const ADMIN_ROLE = "ADMINISTRADOR";
 const ESTADOS = ["ACTIVO", "INACTIVO", "PENDIENTE"];
 
 export default function AdminUsuarios() {
@@ -122,7 +123,7 @@ export default function AdminUsuarios() {
   const resetForm = () => {
     setForm({
       dni: "", nombres: "", apellidos: "", correo: "", telefono: "",
-      contrasena: "", roles: [], estado: "ACTIVO"
+      contrasena: "", roles: [ADMIN_ROLE], estado: "ACTIVO"
     });
     setFieldErrors({});
   };
@@ -207,6 +208,12 @@ export default function AdminUsuarios() {
       if (error) errores[field] = error;
     });
 
+    if (!isEditing) {
+      if (!form.contrasena) errores.contrasena = "La contraseña es obligatoria";
+      else if (!passwordRegex.test(form.contrasena))
+        errores.contrasena = "Debe tener 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial";
+    }
+
     if (Object.keys(errores).length > 0) {
       setFieldErrors(errores);
 
@@ -227,7 +234,7 @@ export default function AdminUsuarios() {
         apellidos: form.apellidos.trim(),
         correo: form.correo.trim(),
         telefono: form.telefono.trim(),
-        roles: form.roles,
+        roles: isEditing ? form.roles : [ADMIN_ROLE],
         estado: form.estado,
         ...( !isEditing && { contrasena: form.contrasena } )
       };
@@ -241,12 +248,6 @@ export default function AdminUsuarios() {
       }
 
       console.log("RESPUESTA BACKEND:", res.data);
-
-      if (!isEditing) { // Solo si estamos creando usuario
-        if (!form.contrasena) errores.contrasena = "La contraseña es obligatoria";
-        else if (!passwordRegex.test(form.contrasena)) 
-          errores.contrasena = "Debe tener 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial";
-      }
 
       if (res.data?.fieldErrors) {
         setFieldErrors(res.data.fieldErrors);
@@ -607,17 +608,21 @@ export default function AdminUsuarios() {
                   </div>
                   <div className="col-6">
                     <label className="form-label small fw-bold">Roles *</label>
-                    <select
-                      className="form-select"
-                      multiple
-                      value={form.roles}
-                      onChange={e => setForm({
-                        ...form,
-                        roles: Array.from(e.target.selectedOptions).map(o => o.value)
-                      })}
-                    >
-                      {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                    {isEditing ? (
+                      <select
+                        className="form-select"
+                        multiple
+                        value={form.roles}
+                        onChange={e => setForm({
+                          ...form,
+                          roles: Array.from(e.target.selectedOptions).map(o => o.value)
+                        })}
+                      >
+                        {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    ) : (
+                      <input className="form-control" value={ADMIN_ROLE} disabled />
+                    )}
                   </div>
                   
                   {!isEditing && (
