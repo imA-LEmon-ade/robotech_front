@@ -32,7 +32,6 @@ export default function AdminUsuarios() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
 
-  const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   // Modales
   const [modal, setModal] = useState(false);
@@ -345,10 +344,6 @@ export default function AdminUsuarios() {
           icon: "error",
           title: "Error de validacion",
           text: backendFieldError,
-          confirmButtonText: "Aceptar",
-        });
-        return;
-      }
           confirmButtonText: "Aceptar",
         });
         return;
