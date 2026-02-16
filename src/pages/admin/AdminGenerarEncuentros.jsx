@@ -178,7 +178,9 @@ export default function AdminGenerarEncuentros() {
                   <option value="">Seleccione un juez...</option>
                   {jueces.map(j => (
                     <option key={j.idJuez} value={j.idJuez}>
-                      {j.usuario ? `${j.usuario.nombres} ${j.usuario.apellidos}` : `Juez ID: ${j.idJuez}`}
+                      {j.nombreCompleto
+                        ? `${j.nombreCompleto} (${j.idJuez})`
+                        : `Juez ID: ${j.idJuez}`}
                     </option>
                   ))}
                 </select>
