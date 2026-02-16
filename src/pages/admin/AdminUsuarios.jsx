@@ -70,25 +70,49 @@ export default function AdminUsuarios() {
 
 
   const cargarPorDni = async () => {
-  try {
-    Swal.fire({
-      title: "Consultando DNI...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading()
-    });
+    //  VALIDACIÓN FRONTEND
+    if (!/^\d{8}$/.test(form.dni)) {
+      Swal.fire(
+        "DNI inválido",
+        "El DNI debe tener exactamente 8 dígitos",
+        "warning"
+      );
+      return;
+    }
 
-    const data = await consultarDni(form.dni);
+    try {
+      Swal.fire({
+        title: "Consultando DNI...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
 
-    setForm(prev => ({
-      ...prev,
-      nombres: data.nombres,
-      apellidos: data.apellidos
-    }));
+      const data = await consultarDni(form.dni);
 
-    Swal.close();
-  } catch (err) {
-    Swal.fire("Error", err.message, "error");
-  }
+      setForm(prev => ({
+        ...prev,
+        nombres: data.nombres,
+        apellidos: data.apellidos
+      }));
+
+      Swal.close();
+    } catch (err) {
+      if (err.response?.status === 404) {
+      Swal.fire(
+        "DNI no encontrado",
+        "No se encontró información para este DNI",
+        "error"
+      );
+      return;
+    }
+
+    Swal.fire(
+      "Error",
+      "No se pudo consultar el DNI. Intenta nuevamente.",
+      "error"
+    );
+    
+    }
 };
   // ============================
   // CARGA DE DATOS
@@ -312,8 +336,6 @@ export default function AdminUsuarios() {
       cargar();
 
     } catch (err) {
-      console.error("ERROR HTTP REAL:", err);
-
       const data = err.response?.data;
 
       const backendFieldError = getFirstFieldError(data?.fieldErrors);
@@ -321,17 +343,33 @@ export default function AdminUsuarios() {
         setFieldErrors(data.fieldErrors);
         Swal.fire({
           icon: "error",
-          title: "Error",
+          title: "Error de validacion",
           text: backendFieldError,
           confirmButtonText: "Aceptar",
         });
         return;
       }
+          confirmButtonText: "Aceptar",
+        });
+        return;
+      }
 
+      // Error de negocio (DNI / correo / teléfono duplicado)
+      if (typeof data?.message === "string" && data.message.trim() !== "") {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message, // 👈 ESTE ES EL BUENO
+          confirmButtonText: "Aceptar",
+        });
+        return;
+      }
+
+      // Fallback
       Swal.fire({
         icon: "error",
         title: "Error inesperado",
-        text: data?.message || "No se pudo procesar la solicitud",
+        text: "No se pudo procesar la solicitud",
         confirmButtonText: "Aceptar",
       });
     }
