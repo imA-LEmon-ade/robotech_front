@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+﻿import { useEffect, useState, useCallback, useMemo } from "react";
 import { FaUserPlus, FaPlus, FaSearch, FaIdCard, FaEnvelope, FaEdit, FaLock, FaPhone } from "react-icons/fa";
 import api from "../../services/axiosConfig";
 import { consultarDni } from "../../services/dniService";
@@ -41,23 +41,25 @@ export default function AdminCompetidores() {
   const cargarCompetidores = useCallback(async () => {
     setLoading(true);
     try {
-      const resComp = await api.get("/admin/usuarios", {
+      const q = [filtrosAplicados.nombre, filtrosAplicados.dni]
+        .map(v => (v || "").trim())
+        .filter(Boolean)
+        .join(" ");
+
+      const resComp = await api.get("/subadmin/competidores", {
         params: {
           page: page - 1,
           size: PAGE_SIZE,
-          nombre: filtrosAplicados.nombre || undefined,
-          dni: filtrosAplicados.dni || undefined,
-          rol: "COMPETIDOR"
+          q: q || undefined
         }
       });
+
       const data = resComp.data || {};
       const content = Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []);
-      const competidoresSolo = content.filter((u) =>
-        Array.isArray(u.roles) ? u.roles.includes("COMPETIDOR") : true
-      );
-      setCompetidores(competidoresSolo);
+
+      setCompetidores(content);
       setTotalPages(data.totalPages ?? 1);
-      setTotalCompetidores(data.totalElements ?? competidoresSolo.length);
+      setTotalCompetidores(data.totalElements ?? content.length);
     } catch {
       Swal.fire("Error", "No se pudo sincronizar la informacion", "error");
     } finally {
@@ -141,10 +143,10 @@ export default function AdminCompetidores() {
       const telefonoLimpio = form.telefono && form.telefono.trim() !== "" ? form.telefono.trim() : null;
 
       if (!editingId) {
-        await api.post("/admin/competidores", { ...form, telefono: telefonoLimpio });
+        await api.post("/subadmin/competidores", { ...form, telefono: telefonoLimpio });
         Swal.fire({ icon: "success", title: "Registrado", timer: 1500, showConfirmButton: false });
       } else {
-        await api.put(`/admin/competidores/${editingId}`, {
+        await api.put(`/competidores/${editingId}`, {
           nombres: form.nombre,
           apellidos: form.apellido,
           dni: form.dni,
@@ -367,3 +369,4 @@ export default function AdminCompetidores() {
     </div>
   );
 }
+

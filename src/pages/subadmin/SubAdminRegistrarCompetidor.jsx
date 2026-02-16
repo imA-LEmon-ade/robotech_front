@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+ï»¿import { useEffect, useState, useCallback, useMemo } from "react";
 import { FaUserPlus, FaPlus, FaSearch, FaIdCard, FaEnvelope, FaEdit, FaLock, FaPhone } from "react-icons/fa";
 import api from "../../services/axiosConfig";
 import { consultarDni } from "../../services/dniService";
@@ -60,7 +60,7 @@ export default function SubAdminRegistrarCompetidor() {
       setTotalPages(data.totalPages ?? 1);
       setTotalCompetidores(data.totalElements ?? content.length);
     } catch (err) {
-      Swal.fire("Error", "No se pudo sincronizar la información", "error");
+      Swal.fire("Error", "No se pudo sincronizar la informaciÃ³n", "error");
     } finally {
       setLoading(false);
     }
@@ -83,17 +83,17 @@ export default function SubAdminRegistrarCompetidor() {
   }, [page, totalPages]);
 
   // =========================
-  // LÓGICA DNI
+  // LÃ“GICA DNI
   // =========================
   const cargarPorDni = async () => {
-    if (form.dni.length !== 8) return Swal.fire("Atención", "DNI debe ser de 8 dígitos", "warning");
+    if (form.dni.length !== 8) return Swal.fire("AtenciÃ³n", "DNI debe ser de 8 dÃ­gitos", "warning");
     try {
       Swal.fire({ title: "Consultando...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       const data = await consultarDni(form.dni);
       setForm(prev => ({ ...prev, nombre: data.nombres, apellido: data.apellidos }));
       Swal.close();
     } catch (err) {
-      Swal.fire("Error", "No se encontró el DNI", "error");
+      Swal.fire("Error", "No se encontrÃ³ el DNI", "error");
     }
   };
 
@@ -128,18 +128,18 @@ export default function SubAdminRegistrarCompetidor() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.dni || !form.nombre || !form.correo) {
-      return Swal.fire("Atención", "Campos obligatorios incompletos", "warning");
+      return Swal.fire("AtenciÃ³n", "Campos obligatorios incompletos", "warning");
     }
 
     try {
-      // Evitar error de Duplicate Entry enviando null si está vacío
+      // Evitar error de Duplicate Entry enviando null si estÃ¡ vacÃ­o
       const telefonoLimpio = form.telefono && form.telefono.trim() !== "" ? form.telefono.trim() : null;
 
       if (!editingId) {
         await api.post("/subadmin/competidores", { ...form, telefono: telefonoLimpio });
-        Swal.fire({ icon: "success", title: "¡Registrado!", timer: 1500, showConfirmButton: false });
+        Swal.fire({ icon: "success", title: "Â¡Registrado!", timer: 1500, showConfirmButton: false });
       } else {
-        // En edición NO enviamos el club para evitar el Error 500 del backend
+        // En ediciÃ³n NO enviamos el club para evitar el Error 500 del backend
         await api.put(`/competidores/${editingId}`, {
           nombres: form.nombre,
           apellidos: form.apellido,
@@ -163,8 +163,8 @@ export default function SubAdminRegistrarCompetidor() {
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border border-light">
         <div>
-          <h2 className="fw-bold text-dark mb-0"><FaUserPlus className="me-2 text-primary"/>Gestión de Competidores</h2>
-          <p className="text-muted mb-0 small text-uppercase fw-bold" style={{letterSpacing: "0.5px"}}>Administración de Participantes</p>
+          <h2 className="fw-bold text-dark mb-0"><FaUserPlus className="me-2 text-primary"/>GestiÃ³n de Competidores</h2>
+          <p className="text-muted mb-0 small text-uppercase fw-bold" style={{letterSpacing: "0.5px"}}>AdministraciÃ³n de Participantes</p>
         </div>
         <button className="btn btn-primary shadow-sm rounded-pill px-4 fw-bold border-0" onClick={abrirModalCrear}>
           <FaPlus className="me-2"/> REGISTRAR COMPETIDOR
@@ -176,7 +176,7 @@ export default function SubAdminRegistrarCompetidor() {
         <div className="card-body p-2">
           <div className="input-group">
             <span className="input-group-text bg-transparent border-0"><FaSearch className="text-muted"/></span>
-            <input type="text" className="form-control border-0 bg-light shadow-none" placeholder="Buscar por nombre, DNI o teléfono..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            <input type="text" className="form-control border-0 bg-light shadow-none" placeholder="Buscar por nombre, DNI o telÃ©fono..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
           </div>
         </div>
       </div>
@@ -214,11 +214,11 @@ export default function SubAdminRegistrarCompetidor() {
                         <span className="text-dark"><FaEnvelope className="me-2 text-primary opacity-50"/>{c.correo}</span>
                         <span className="text-secondary mt-1">
                           <FaPhone className="me-2 text-success opacity-50"/>
-                          {c.telefono || <span className="text-muted fst-italic">Sin teléfono</span>}
+                          {c.telefono || <span className="text-muted fst-italic">Sin telÃ©fono</span>}
                         </span>
                       </div>
                     </td>
-                    <td><span className="badge bg-light text-dark border fw-normal">{c.clubNombre || "—"}</span></td>
+                    <td><span className="badge bg-light text-dark border fw-normal">{c.clubNombre || "â€”"}</span></td>
                     <td className="text-end pe-4">
                       <button className="btn btn-outline-primary border-0 rounded-3 py-2" onClick={() => abrirEditar(c)}>
                         <FaEdit className="me-1"/> Editar
@@ -253,7 +253,7 @@ export default function SubAdminRegistrarCompetidor() {
               Anterior
             </button>
             <span className="btn btn-light btn-sm disabled">
-              Página {page} de {totalPages}
+              PÃ¡gina {page} de {totalPages}
             </span>
             <button
               className="btn btn-outline-secondary btn-sm"
@@ -267,7 +267,7 @@ export default function SubAdminRegistrarCompetidor() {
               onClick={() => setPage(totalPages)}
               disabled={page >= totalPages}
             >
-              Último
+              Ãšltimo
             </button>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function SubAdminRegistrarCompetidor() {
                         className="form-control bg-light border-0 shadow-none"
                         value={form.dni}
                         onChange={e => setForm({ ...form, dni: e.target.value.replace(/\D/g, "").slice(0, 8) })}
-                        placeholder="8 dígitos"
+                        placeholder="8 dÃ­gitos"
                         inputMode="numeric"
                         maxLength={8}
                       />
@@ -312,7 +312,7 @@ export default function SubAdminRegistrarCompetidor() {
                     <input type="email" className="form-control bg-light border-0 py-2 shadow-none" value={form.correo} onChange={e => setForm({...form, correo: e.target.value})} required />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-muted text-uppercase">Teléfono</label>
+                    <label className="form-label small fw-bold text-muted text-uppercase">TelÃ©fono</label>
                     <div className="input-group">
                         <span className="input-group-text bg-light border-0"><FaPhone className="text-muted" size={12}/></span>
                         <input
@@ -327,7 +327,7 @@ export default function SubAdminRegistrarCompetidor() {
                     </div>
                   </div>
 
-                  {/* ? OCULTAR CLUB Y CLAVE EN EDICIÓN */}
+                  {/* ? OCULTAR CLUB Y CLAVE EN EDICIÃ“N */}
                   {!editingId && (
                     <>
                       <div className="col-12 mt-2">
@@ -366,3 +366,4 @@ export default function SubAdminRegistrarCompetidor() {
     </div>
   );
 }
+

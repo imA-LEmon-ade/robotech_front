@@ -1,4 +1,4 @@
-export default function Footer() {
+﻿export default function Footer() {
   const goAdminLogin = () => {
     window.location.href = "/admin/login";
   };
@@ -17,17 +17,17 @@ export default function Footer() {
             >
               Casos de uso
             </h6>
-            <p>Dise�o UI<br/>UX<br/>Wireframing<br/>Prototipos<br/>Sistemas<br/>Colaboraci�n</p>
+            <p>Diseño UI<br/>UX<br/>Wireframing<br/>Prototipos<br/>Sistemas<br/>Colaboración</p>
           </div>
 
           <div className="col-md-4">
             <h6 className="footer-title">Explorar</h6>
-            <p>Dise�o<br/>Prototipado<br/>Desarrollo<br/>Colaboraci�n<br/>Proceso</p>
+            <p>Diseño<br/>Prototipado<br/>Desarrollo<br/>Colaboración<br/>Proceso</p>
           </div>
 
           <div className="col-md-4">
             <h6 className="footer-title">Recursos</h6>
-            <p>Blog<br/>Mejores pr�cticas<br/>Soporte<br/>Desarrolladores<br/>Biblioteca</p>
+            <p>Blog<br/>Mejores prácticas<br/>Soporte<br/>Desarrolladores<br/>Biblioteca</p>
           </div>
 
         </div>
